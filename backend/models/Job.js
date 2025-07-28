@@ -5,9 +5,10 @@ const jobSchema = new mongoose.Schema({
   description: String,
   status: { type: String, enum: ['on', 'off'], default: 'on' },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  machineDetails: String,
+  machineId: { type: mongoose.Schema.Types.ObjectId, ref: 'MachineDetails' },
   rfid: String,
-  jobCount: Number
+  jobCount: { type: Number, default: 1 },
+  rejectionCount: { type: Number, default: 0 }
 }, { timestamps: true });
 
 const Job = mongoose.model('Job', jobSchema);

@@ -20,7 +20,7 @@ const router = express.Router();
 router.use(protect);
 
 // POST: Create new job
-router.post('/', createJob);
+router.post('/jobs', createJob);
 
 // GET: Get all jobs for current user
 router.get('/jobs', getJobs);
