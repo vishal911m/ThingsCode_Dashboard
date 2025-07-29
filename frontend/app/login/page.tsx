@@ -11,7 +11,7 @@ function page() {
   useEffect(()=>{
     //redirect to home page if user is already logged in
     if(user && user._id){
-      router.push("/");
+      router.push("/dashboard");
     }
   },[user, router]);
 

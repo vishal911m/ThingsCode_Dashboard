@@ -82,7 +82,7 @@ export const UserContextProvider = ({ children }) => {
       });
 
       // refresh the user details
-      // await getUser(); // fetch before redirecting
+      await getUser(); // fetch before redirecting
 
       // push user to the dashboard page
       router.push("/");

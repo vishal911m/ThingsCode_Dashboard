@@ -109,7 +109,7 @@ export const TasksProvider = ({ children }) => {
   const getMachines = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/machines`, {
+      const res = await axios.get(`${BASE_URL}/tasks/machines`, {
         withCredentials: true,
       });
       setMachines(res.data);

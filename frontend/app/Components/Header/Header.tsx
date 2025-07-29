@@ -6,7 +6,8 @@ import { useUserContext } from "@/context/userContext";
 
 function Header() {
   const currentDate = moment().format("DD / MM / YYYY");
-  const {logoutUser} = useUserContext();
+  const {logoutUser, user} = useUserContext();
+  const userId = user._id;
 
   // Get current time in 24-hour format
   const currentTime = moment();
@@ -64,11 +65,13 @@ function Header() {
           <button className="p-2 rounded-full hover:bg-gray-700">
             <FaUser />
           </button>
-          <button className="p-2 rounded-full hover:bg-gray-700" 
+          { userId && (
+            <button className="p-2 rounded-full hover:bg-gray-700" 
             onClick={logoutUser}
           >
             <FaSignOutAlt />
           </button>
+          )}
         </div>
       </div>
     </header>
