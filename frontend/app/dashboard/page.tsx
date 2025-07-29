@@ -18,34 +18,60 @@ export default function DashboardPage() {
     getJobs();
   }, []);
 
+  // Enhance each machine with production & rejection count
   const machinesWithProduction = machines.map((machine: any) => {
-  const matchingJobs = jobs.filter(
-    (job: any) => job.machineId === machine._id
-  );
+    
 
-  const productionCount = matchingJobs.reduce(
-    (sum: number, job: any) => sum + (job.jobCount || 0),
-    0
-  );
+    const matchingJobs = jobs.filter(
+      (job: any) => job.machineId === machine._id
+    );
 
-  const rejectionCount = matchingJobs.reduce(
-    (sum: number, job: any) => sum + (job.rejectionCount || 0),
-    0
-  );
+    const productionCount = matchingJobs.reduce(
+      (sum: number, job: any) => sum + (job.jobCount || 0),
+      0
+    );
 
-  return {
-    ...machine,
-    productionCount,
-    rejectionCount,
-  };
-});
+    const rejectionCount = matchingJobs.reduce(
+      (sum: number, job: any) => sum + (job.rejectionCount || 0),
+      0
+    );
+
+    // Get the latest job for this machine
+    const latestJob = matchingJobs.reduce((latest: any, current: any) => {
+      return !latest || new Date(current.createdAt) > new Date(latest.createdAt)
+        ? current
+        : latest;
+    }, null);
+
+    // Get RFID from latest job
+    const latestRFID = latestJob?.rfid;
+
+    // Match rfid in jobList to get job name
+    let liveToolName = 'N/A';
+    if (latestRFID && Array.isArray(machine.jobList)) {
+      for (const jobEntry of machine.jobList) {
+        const [name, value] = Object.entries(jobEntry)[0];
+        if (value === latestRFID) {
+          liveToolName = name;
+          break;
+        }
+      }
+    }    
+
+    return {
+      ...machine,
+      productionCount,
+      rejectionCount,
+      liveToolName,
+    };
+  });
 
   return (
     <div className="dashboard p-6">
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        {machines.map((machine: any) => (
+        {machinesWithProduction.map((machine: any) => (
           <Link key={machine._id} href={`/machine/${machine._id}`}>
             <div className="w-[15rem] rounded-lg overflow-hidden shadow hover:shadow-md transition cursor-pointer border border-gray-300 bg-white">
 
@@ -62,28 +88,35 @@ export default function DashboardPage() {
               <div className="grid grid-cols-2 divide-x border-t border-b">
                 <div className="p-2 text-center">
                   <p className="text-xs font-semibold text-gray-700">Production Count</p>
-                  <p className="text-green-600 font-bold">{machine.productionCount ?? 0}</p>
+                  <p className="text-green-600 font-bold">{machine.productionCount}</p>
                 </div>
                 <div className="p-2 text-center">
                   <p className="text-xs font-semibold text-gray-700">Rejection Count</p>
-                  <p className="text-red-600 font-bold">{machine.rejectionCount ?? 0}</p>
+                  <p className="text-red-600 font-bold">{machine.rejectionCount}</p>
                 </div>
               </div>
 
               {/* Bottom - Machine Status & Live Tools */}
               <div className="grid grid-cols-2 divide-x  text-center">
                 <div className='p-2'>
-                  <p className="text-xs font-semibold text-gray-700 mb-1">Machine</p>
+                  <p className="text-xs font-semibold text-gray-700 mb-1">Machine Status</p>
                   <div className="flex justify-center gap-1 items-center">
-                    <span className="text-green-600 text-lg">🟢</span>
-                    <span className="text-xs font-bold text-green-600">ON</span>
-                    <span className="text-red-600 text-lg">🔴</span>
-                    <span className="text-xs font-bold text-red-600">OFF</span>
+                    {machine.status === 'on' ? (
+                      <>
+                        <span className="text-green-600 text-lg">🟢</span>
+                        <span className="text-xs font-bold text-green-600">ON</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-red-600 text-lg">🔴</span>
+                        <span className="text-xs font-bold text-red-600">OFF</span>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className='p-2'>
                   <p className="text-xs font-semibold text-gray-700 mb-1">Live Tools Details</p>
-                  <p className="text-blue-600 font-bold text-sm">{machine.productionCount ?? 0}</p>
+                  <p className="text-blue-600 font-bold text-sm">{machine.liveToolName}</p>
                 </div>
               </div>
 
