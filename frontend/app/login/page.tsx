@@ -1,37 +1,30 @@
-'use client'
-import { useState } from 'react'
-import { useUserContext } from '@/context/userContext'
+"use client";
+import React, { useEffect } from "react";
+import { useUserContext } from "@/context/userContext";
+import { useRouter } from "next/navigation"; 
+import LoginForm from "../Components/auth/LoginForm/LoginForm";
 
-export default function LoginPage() {
-  const { login } = useUserContext()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+function page() {
+  const {user} = useUserContext();
+  const router = useRouter();
+  
+  useEffect(()=>{
+    //redirect to home page if user is already logged in
+    if(user && user._id){
+      router.push("/");
+    }
+  },[user, router]);
+
+  //return null or a loading spinner/indicator
+  if(user && user._id){
+    return null;
+  }
 
   return (
-    <div className="flex items-center justify-center flex-1">
-      <form
-        onSubmit={(e) => { e.preventDefault(); login(email, password) }}
-        className="bg-white p-8 rounded shadow-md w-full max-w-md"
-      >
-        <h2 className="text-2xl font-semibold mb-6">Sign in</h2>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-3 mb-4 border rounded focus:outline-none focus:ring"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-3 mb-6 border rounded focus:outline-none focus:ring"
-        />
-        <button type="submit" className="w-full p-3 bg-blue-600 text-white rounded hover:bg-blue-700">
-          Login
-        </button>
-      </form>
+    <div className="auth-page w-full h-full flex justify-center items-center">
+      <LoginForm />
     </div>
-  )
+  );
 }
+
+export default page;

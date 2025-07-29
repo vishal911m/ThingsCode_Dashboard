@@ -2,17 +2,17 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { useTask } from '@/context/taskContext';
+import { useTasks } from '@/context/taskContext';
 
 export default function DashboardPage() {
   const {
     machines,
-    getTasks,
+    getMachines,
     openModalForAddMachine,
-  } = useTask();
+  } = useTasks();
 
   useEffect(() => {
-    getTasks();
+    getMachines();
   }, []);
 
   return (

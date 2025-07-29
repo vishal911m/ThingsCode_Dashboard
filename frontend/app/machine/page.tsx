@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useTask } from '@/context/taskContext'
 import Modal from '../Components/Modal/Modal'
 import DeleteModal from '../Components/DeleteModal/DeleteModal'
+import { useTasks } from '@/context/taskContext'
 
 export default function MachinePage() {
   const {
@@ -14,7 +14,7 @@ export default function MachinePage() {
     openDeleteModal,
     isModalOpen,
     isDeleteModalOpen,
-  } = useTask()
+  } = useTasks()
 
   useEffect(() => {
     getTasks()

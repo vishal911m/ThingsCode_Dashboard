@@ -1,4 +1,4 @@
-import { TaskProvider } from '@/context/taskContext';
+import { TasksProvider } from '@/context/taskContext';
 import { UserContextProvider } from '@/context/userContext';
 import React, { ReactNode } from 'react'
 
@@ -9,9 +9,9 @@ interface Props{
 const UserProvider = ({children}: Props) => {
   return (
     <UserContextProvider>
-      <TaskProvider>
+      <TasksProvider>
         {children}
-      </TaskProvider>
+      </TasksProvider>
     </UserContextProvider>
     
   )

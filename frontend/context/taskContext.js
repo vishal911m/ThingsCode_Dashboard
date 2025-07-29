@@ -1,132 +1,138 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 const TaskContext = createContext();
 
-export const useTask = () => useContext(TaskContext);
+// const BASE_URL = 'https://your-backend-url.com/api'; // 🔁 Replace with your backend URL
+const BASE_URL = "http://localhost:8000/api/v1";
 
-export const TaskProvider = ({ children }) => {
+export const TasksProvider = ({ children }) => {
+  const [jobs, setJobs] = useState([]);
   const [machines, setMachines] = useState([]);
-  const [selectedMachine, setSelectedMachine] = useState(null);
-  const [formData, setFormData] = useState({
-    machineName: '',
-    machineType: '',
-    jobList: [],
-  });
+  const [loading, setLoading] = useState(false);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  // --- JOB FUNCTIONS ---
 
-  const router = useRouter();
-
-  const token =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('token')
-      : null;
-
-  const axiosAuth = axios.create({
-    baseURL: 'https://your-api-url.com/api',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  // ----------- Modal Actions -----------
-  const openModalForAddMachine = () => {
-    setFormData({ machineName: '', machineType: '', jobList: [] });
-    setSelectedMachine(null);
-    setIsModalOpen(true);
-  };
-
-  const openModalForEditMachine = (machine) => {
-    setFormData({
-      machineName: machine.machineName,
-      machineType: machine.machineType,
-      jobList: machine.jobList || [],
-    });
-    setSelectedMachine(machine);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedMachine(null);
-    setFormData({ machineName: '', machineType: '', jobList: [] });
-  };
-
-  const openDeleteModal = (machine) => {
-    setSelectedMachine(machine);
-    setIsDeleteModalOpen(true);
-  };
-
-  const closeDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-    setSelectedMachine(null);
-  };
-
-  // ----------- Input Handler -----------
-  const handleInput = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // ----------- API Functions -----------
-  const getTasks = async () => {
+  const createJob = async (jobData) => {
     try {
-      const res = await axiosAuth.get('/machine');
-      setMachines(res.data);
-    } catch (error) {
-      console.error('Error fetching machines:', error);
+      setLoading(true);
+      const res = await axios.post(`${BASE_URL}/jobs`, jobData, {
+        withCredentials: true,
+      });
+      setJobs((prev) => [...prev, res.data]);
+      toast.success('Job created successfully');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create job');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getTask = async (id) => {
+  const getJobs = async () => {
     try {
-      const res = await axiosAuth.get(`/machine/${id}`);
+      setLoading(true);
+      const res = await axios.get(`${BASE_URL}/jobs`, {
+        withCredentials: true,
+      });
+      setJobs(res.data);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to fetch jobs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getJobById = async (id) => {
+    try {
+      const res = await axios.get(`${BASE_URL}/jobs/${id}`, {
+        withCredentials: true,
+      });
       return res.data;
-    } catch (error) {
-      console.error('Error fetching machine:', error);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to get job');
+      return null;
     }
   };
 
-  const deleteMachine = async () => {
-    if (!selectedMachine) return;
+  const updateJob = async (id, updatedData) => {
     try {
-      await axiosAuth.delete(`/machine/${selectedMachine._id}`);
-      setMachines((prev) =>
-        prev.filter((m) => m._id !== selectedMachine._id)
+      setLoading(true);
+      const res = await axios.put(`${BASE_URL}/jobs/${id}`, updatedData, {
+        withCredentials: true,
+      });
+      setJobs((prev) =>
+        prev.map((job) => (job._id === id ? res.data : job))
       );
-      closeDeleteModal();
-    } catch (error) {
-      console.error('Error deleting machine:', error);
+      toast.success('Job updated successfully');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update job');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Fetch machines on mount
-  useEffect(() => {
-    if (token) getTasks();
-  }, [token]);
+  const deleteJob = async (id) => {
+    try {
+      setLoading(true);
+      await axios.delete(`${BASE_URL}/jobs/${id}`, {
+        withCredentials: true,
+      });
+      setJobs((prev) => prev.filter((job) => job._id !== id));
+      toast.success('Job deleted successfully');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete job');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- MACHINE FUNCTIONS ---
+
+  const createMachine = async (machineData) => {
+    try {
+      setLoading(true);
+      const res = await axios.post(`${BASE_URL}/machines`, machineData, {
+        withCredentials: true,
+      });
+      setMachines((prev) => [...prev, res.data]);
+      toast.success('Machine created successfully');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create machine');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getMachines = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${BASE_URL}/machines`, {
+        withCredentials: true,
+      });
+      setMachines(res.data);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to fetch machines');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <TaskContext.Provider
       value={{
+        jobs,
         machines,
-        formData,
-        selectedMachine,
-        isModalOpen,
-        isDeleteModalOpen,
-        openModalForAddMachine,
-        openModalForEditMachine,
-        closeModal,
-        getTasks,
-        getTask,
-        deleteMachine,
-        openDeleteModal,
-        closeDeleteModal,
-        handleInput,
+        loading,
+        createJob,
+        getJobs,
+        getJobById,
+        updateJob,
+        deleteJob,
+        createMachine,
+        getMachines,
       }}
     >
       {children}
@@ -134,6 +140,4 @@ export const TaskProvider = ({ children }) => {
   );
 };
 
-export const useTasks = ()=>{
-  return React.useContext(TaskContext);
-}; 
+export const useTasks = () => useContext(TaskContext);

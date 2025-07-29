@@ -3,7 +3,7 @@ import { useContext, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/context/userContext';
 
-export default function useUserRedirect() {
+export default function useRedirect(redirect: string) {
   const { user } = useUserContext();
   const router = useRouter();
 
