@@ -1,9 +1,9 @@
 'use client';
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { formatDateLocal } from '@/utils/date';
+import { useUserContext } from './userContext';
 
 const TaskContext = createContext();
 
@@ -14,7 +14,48 @@ export const TasksProvider = ({ children }) => {
   const [jobs, setJobs] = useState([]);
   const [todayJobs, setTodayJobs] = useState([]);
   const [machines, setMachines] = useState([]);
+  const [machine, setMachine] = useState({});
   const [loading, setLoading] = useState(false);
+  const userId = useUserContext().user._id;
+  const [isEditing, setIsEditing] = useState(false);
+  const [activeMachine, setActiveMachine] = useState(null);
+  const [modalMode, setModalMode] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
+
+  // 👉 Open Add Task Modal
+  const openModalForAddMachine = () => {
+    setModalMode("add");
+    setIsEditing(true);
+    setMachine({});
+  };
+
+  // 👉 Open Edit Task Modal
+  const openModalForEditMachine = (machine) => {
+    setModalMode("edit");
+    setIsEditing(true);
+    setActiveMachine(machine);
+    setMachine(machine);
+  };
+
+  // 👉 Close All Modals
+  const closeModal = () => {
+    setIsEditing(false);
+    setModalMode("");
+    setActiveMachine(null);
+    setMachine({});
+  };
+
+  // 👉 Handle Form Input
+  const handleInput = (name) => (e) => {
+    if (name === "setTask") {
+      setMachine(e);
+    } else {
+      let value = e.target.value;
+      if (name === "completed") value = value === "true";
+      setMachine({ ...task, [name]: value });
+    }
+  };
 
   // --- JOB FUNCTIONS ---
 
@@ -129,7 +170,7 @@ export const TasksProvider = ({ children }) => {
   const createMachine = async (machineData) => {
     try {
       setLoading(true);
-      const res = await axios.post(`${BASE_URL}/machines`, machineData, {
+      const res = await axios.post(`${BASE_URL}/tasks/machines`, machineData, {
         withCredentials: true,
       });
       setMachines((prev) => [...prev, res.data]);
@@ -162,6 +203,7 @@ export const TasksProvider = ({ children }) => {
         todayJobs,
         machines,
         loading,
+        isEditing,
         createJob,
         getJobs,
         getJobById,
@@ -170,7 +212,11 @@ export const TasksProvider = ({ children }) => {
         createMachine,
         getMachines,
         getTodayJobs,
-        getJobsByDate
+        getJobsByDate,
+        handleInput,
+        openModalForAddMachine,
+        openModalForEditMachine,
+        closeModal
       }}
     >
       {children}
