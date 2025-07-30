@@ -7,7 +7,7 @@ export const createJob = asyncHandler(async (req, res) => {
   const job = new Job({
     title,
     description,
-    status: 'on',
+    status: req.body.status === 'off' ? 'off' : 'on',
     user: req.user._id,
     rfid,
     machineId,

@@ -36,15 +36,21 @@ export default function DashboardPage() {
       0
     );
 
-    // Get the latest job for this machine
-    const latestJob = matchingJobs.reduce((latest: any, current: any) => {
-      return !latest || new Date(current.createdAt) > new Date(latest.createdAt)
-        ? current
-        : latest;
-    }, null);
+    // 👉 latest job for RFID + status
+    const latestJob = matchingJobs.reduce(
+      (latest: any, current: any) =>
+        !latest || new Date(current.createdAt) > new Date(latest.createdAt)
+          ? current
+          : latest,
+      null
+    );
 
     // Get RFID from latest job
     const latestRFID = latestJob?.rfid;
+    const latestStatus = latestJob?.status ?? 'off';
+
+    console.log('Latest Job for machine', machine.machineName, latestJob);
+
 
     // Match rfid in jobList to get job name
     let liveToolName = 'N/A';
@@ -63,6 +69,7 @@ export default function DashboardPage() {
       productionCount,
       rejectionCount,
       liveToolName,
+      latestStatus,
     };
   });
 
@@ -101,7 +108,7 @@ export default function DashboardPage() {
                 <div className='p-2'>
                   <p className="text-xs font-semibold text-gray-700 mb-1">Machine Status</p>
                   <div className="flex justify-center gap-1 items-center">
-                    {machine.status === 'on' ? (
+                    {machine.latestStatus === 'on' ? (
                       <>
                         <span className="text-green-600 text-lg">🟢</span>
                         <span className="text-xs font-bold text-green-600">ON</span>
@@ -126,7 +133,7 @@ export default function DashboardPage() {
 
         <button
           onClick={openModalForAddMachine}
-          className="bg-gray-100 hover:bg-gray-200 p-4 rounded-lg flex items-center justify-center font-semibold text-gray-800 border border-dashed border-gray-400"
+          className="bg-gray-100 w-[15rem] hover:bg-gray-200 p-4 rounded-lg flex items-center justify-center font-semibold text-gray-800 border border-dashed border-gray-400"
         >
           + Add Machine
         </button>
