@@ -17,8 +17,8 @@ function MachineModal() {
   const [machineName, setMachineName] = useState("");
   const [machineType, setMachineType] = useState("");
   const [jobList, setJobList] = useState(
-    Array(5).fill({ jobName: "", uid: "" })
-  );
+  Array(5).fill(0).map(() => ({ jobName: "", uid: "" }))
+);
 
   const ref = useRef(null);
 
@@ -51,14 +51,10 @@ function MachineModal() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const jobMapArray = jobList
-      .filter(job => job.jobName && job.uid)
-      .map(job => new Map([[job.jobName, job.uid]]));
-
     const machineData = {
       machineName,
       machineType,
-      jobList: jobMapArray,
+      jobList: jobList.filter(job => job.jobName && job.uid),
     };
 
     let success = false;
