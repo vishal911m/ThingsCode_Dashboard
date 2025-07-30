@@ -25,6 +25,21 @@ export const getJobs = asyncHandler(async (req, res) => {
   res.status(200).json(jobs);
 });
 
+export const getTodayJobs = asyncHandler(async (req, res) => {
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const todayJobs = await Job.find({
+    user: req.user._id,
+    createdAt: { $gte: startOfDay, $lte: endOfDay }
+  });
+
+  res.status(200).json(todayJobs);
+});
+
 export const getJobById = asyncHandler(async (req, res) => {
   const job = await Job.findOne({ _id: req.params.id, user: req.user._id });
   if (!job) {

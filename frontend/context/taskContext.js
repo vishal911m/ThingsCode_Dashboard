@@ -11,6 +11,7 @@ const BASE_URL = "http://localhost:8000/api/v1";
 
 export const TasksProvider = ({ children }) => {
   const [jobs, setJobs] = useState([]);
+  const [todayJobs, setTodayJobs] = useState([]);
   const [machines, setMachines] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -44,6 +45,20 @@ export const TasksProvider = ({ children }) => {
       setLoading(false);
     }
   };
+
+  const getTodayJobs = async () => {
+  try {
+    setLoading(true);
+    const res = await axios.get(`${BASE_URL}/jobs/today`, {
+      withCredentials: true,
+    });
+    setTodayJobs(res.data); // replace current jobs state with today's jobs
+  } catch (err) {
+    toast.error(err.response?.data?.message || 'Failed to fetch today\'s jobs');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getJobById = async (id) => {
     try {
@@ -124,6 +139,7 @@ export const TasksProvider = ({ children }) => {
     <TaskContext.Provider
       value={{
         jobs,
+        todayJobs,
         machines,
         loading,
         createJob,
@@ -133,6 +149,7 @@ export const TasksProvider = ({ children }) => {
         deleteJob,
         createMachine,
         getMachines,
+        getTodayJobs,
       }}
     >
       {children}

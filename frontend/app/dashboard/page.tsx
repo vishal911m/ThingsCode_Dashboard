@@ -11,18 +11,20 @@ export default function DashboardPage() {
     openModalForAddMachine,
     getJobs,
     jobs,
+    getTodayJobs,
+    todayJobs
   } = useTasks();
 
   useEffect(() => {
     getMachines();
-    getJobs();
+    getTodayJobs();
   }, []);
 
   // Enhance each machine with production & rejection count
   const machinesWithProduction = machines.map((machine: any) => {
     
 
-    const matchingJobs = jobs.filter(
+    const matchingJobs = todayJobs.filter(
       (job: any) => job.machineId === machine._id
     );
 
