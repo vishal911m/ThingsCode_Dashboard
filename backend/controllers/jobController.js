@@ -1,5 +1,6 @@
 import Job from '../models/Job.js';
 import asyncHandler from 'express-async-handler';
+import { parseISO, startOfDay, endOfDay } from 'date-fns';
 
 export const createJob = asyncHandler(async (req, res) => {
   const { title, description, rfid, machineId, jobCount, rejectionCount } = req.body;
@@ -48,20 +49,19 @@ export const getJobsByDate = asyncHandler(async (req, res) => {
     throw new Error('Date is required');
   }
 
-  const startOfDay = new Date(date);
-  startOfDay.setHours(0, 0, 0, 0);
+  // Parse date as local (not UTC)
+  const parsedDate = parseISO(date); // This creates local time like "2025-07-29T00:00:00.000+05:30"
 
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
+  const start = startOfDay(parsedDate); // 00:00 IST
+  const end = endOfDay(parsedDate);     // 23:59:59 IST
 
   const jobs = await Job.find({
     user: req.user._id,
-    createdAt: { $gte: startOfDay, $lte: endOfDay }
+    createdAt: { $gte: start, $lte: end }
   });
 
   res.status(200).json(jobs);
 });
-
 
 export const getJobById = asyncHandler(async (req, res) => {
   const job = await Job.findOne({ _id: req.params.id, user: req.user._id });

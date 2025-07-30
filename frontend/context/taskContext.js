@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { formatDateLocal } from '@/utils/date';
 
 const TaskContext = createContext();
 
@@ -61,16 +62,16 @@ export const TasksProvider = ({ children }) => {
   };
 
   const getJobsByDate = async (date) => {
-    try {
+  try {
       setLoading(true);
 
-      const isoDate = new Date(date).toISOString().split('T')[0]; // e.g., "2025-07-29"
+      const localDateString = formatDateLocal(new Date(date)); // e.g., "2025-07-31"
 
-      const res = await axios.get(`${BASE_URL}/jobs/by-date?date=${isoDate}`, {
+      const res = await axios.get(`${BASE_URL}/jobs/by-date?date=${localDateString}`, {
         withCredentials: true,
       });
 
-      setTodayJobs(res.data); // Use same state
+      setTodayJobs(res.data); // Or setDateFilteredJobs if you want a separate state
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to fetch jobs for selected date');
     } finally {

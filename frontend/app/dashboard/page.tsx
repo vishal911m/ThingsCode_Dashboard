@@ -101,6 +101,7 @@ export default function DashboardPage() {
               if (date) {
                 setSelectedDate(date);
                 getJobsByDate(date);
+                console.log("Selected date:", date);
               }
             }}
             initialFocus
