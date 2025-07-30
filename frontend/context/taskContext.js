@@ -58,7 +58,26 @@ export const TasksProvider = ({ children }) => {
   } finally {
     setLoading(false);
   }
-};
+  };
+
+  const getJobsByDate = async (date) => {
+    try {
+      setLoading(true);
+
+      const isoDate = new Date(date).toISOString().split('T')[0]; // e.g., "2025-07-29"
+
+      const res = await axios.get(`${BASE_URL}/jobs/by-date?date=${isoDate}`, {
+        withCredentials: true,
+      });
+
+      setTodayJobs(res.data); // Use same state
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to fetch jobs for selected date');
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const getJobById = async (id) => {
     try {
@@ -150,6 +169,7 @@ export const TasksProvider = ({ children }) => {
         createMachine,
         getMachines,
         getTodayJobs,
+        getJobsByDate
       }}
     >
       {children}

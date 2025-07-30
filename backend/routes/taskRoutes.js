@@ -6,6 +6,7 @@ import {
   updateJob,
   deleteJob,
   getTodayJobs,
+  getJobsByDate,
 } from '../controllers/jobController.js';
 
 import {
@@ -25,6 +26,10 @@ router.post('/jobs', createJob);
 
 // GET: Get all jobs for current user
 router.get('/jobs', getJobs);
+
+// Get: Get all the jobs by date
+router.get('/jobs/by-date', getJobsByDate);
+
 
 // GET: Get only today's jobs for the user
 router.get('/jobs/today', getTodayJobs);
