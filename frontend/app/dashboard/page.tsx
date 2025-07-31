@@ -17,7 +17,8 @@ export default function DashboardPage() {
     jobs,
     getTodayJobs,
     todayJobs,
-    getJobsByDate
+    getJobsByDate,
+    openModalForDeleteMachine
   } = useTasks();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -127,7 +128,11 @@ export default function DashboardPage() {
                   > 
                     ✏️
                   </button>
-                  <button title="Delete" className="hover:text-gray-200">🗑️</button>
+                  <button title="Delete" className="hover:text-gray-200"
+                    onClick={()=>openModalForDeleteMachine(machine)}
+                  >
+                    🗑️
+                  </button>
                 </div>
               </div>
 

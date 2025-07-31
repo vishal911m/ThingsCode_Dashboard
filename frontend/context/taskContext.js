@@ -21,7 +21,7 @@ export const TasksProvider = ({ children }) => {
   const [activeMachine, setActiveMachine] = useState(null);
   const [modalMode, setModalMode] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [taskToDelete, setTaskToDelete] = useState(null);
+  const [machineToDelete, setMachineToDelete] = useState(null);
 
   // 👉 Open Add Task Modal
   const openModalForAddMachine = () => {
@@ -38,12 +38,20 @@ export const TasksProvider = ({ children }) => {
     setMachine(machine);
   };
 
+  // 👉 Open Delete Modal for a Task
+  const openModalForDeleteMachine = (machine) => {
+    setMachineToDelete(machine);
+    setShowDeleteModal(true);
+  };
+
   // 👉 Close All Modals
   const closeModal = () => {
     setIsEditing(false);
     setModalMode("");
     setActiveMachine(null);
     setMachine({});
+    setShowDeleteModal(false);
+    setMachineToDelete(null);
   };
 
   // 👉 Handle Form Input
@@ -152,16 +160,17 @@ export const TasksProvider = ({ children }) => {
     }
   };
 
-  const deleteJob = async (id) => {
+  const deleteMachine = async (id) => {
     try {
       setLoading(true);
-      await axios.delete(`${BASE_URL}/jobs/${id}`, {
+      await axios.delete(`${BASE_URL}/tasks/machines/${id}`, {
         withCredentials: true,
       });
       setJobs((prev) => prev.filter((job) => job._id !== id));
-      toast.success('Job deleted successfully');
+      getMachines();
+      toast.success('Machine deleted successfully');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to delete job');
+      toast.error(err.response?.data?.message || 'Failed to delete machine');
     } finally {
       setLoading(false);
     }
@@ -210,11 +219,13 @@ export const TasksProvider = ({ children }) => {
         isEditing,
         modalMode,
         activeMachine,
+        machineToDelete,
+        showDeleteModal,
         createJob,
         getJobs,
         getJobById,
         updateJob,
-        deleteJob,
+        deleteMachine,
         createMachine,
         getMachines,
         getTodayJobs,
@@ -222,6 +233,7 @@ export const TasksProvider = ({ children }) => {
         handleInput,
         openModalForAddMachine,
         openModalForEditMachine,
+        openModalForDeleteMachine,
         closeModal
       }}
     >

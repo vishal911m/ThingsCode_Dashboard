@@ -6,9 +6,9 @@ import React, { useEffect, useRef } from "react";
 
 const DeleteModal = () => {
   const {
-    isDeleteModalOpen,
-    closeDeleteModal,
-    selectedMachine,
+    showDeleteModal,
+    closeModal,
+    machineToDelete,
     deleteMachine,
   } = useTasks();
 
@@ -19,18 +19,18 @@ const DeleteModal = () => {
   useDetectOutside({
     ref,
     callback: () => {
-      closeDeleteModal();
+      closeModal();
     },
   });
 
   const handleDelete = async () => {
-    if (selectedMachine?._id) {
-      await deleteMachine(selectedMachine._id);
-      closeDeleteModal();
+    if (machineToDelete?._id) {
+      await deleteMachine(machineToDelete._id);
+      closeModal();
     }
   };
 
-  if (!isDeleteModalOpen) return null;
+  if (!showDeleteModal) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
@@ -43,13 +43,13 @@ const DeleteModal = () => {
         </h2>
 
         <p className="text-center text-gray-600">
-          <strong>{selectedMachine?.machineName}</strong> will be permanently
+          <strong>{machineToDelete?.machineName}</strong> will be permanently
           removed.
         </p>
 
         <div className="flex justify-end space-x-4">
           <button
-            onClick={closeDeleteModal}
+            onClick={closeModal}
             className="px-4 py-2 border rounded-md hover:bg-gray-100"
           >
             Cancel
