@@ -22,6 +22,7 @@ export const TasksProvider = ({ children }) => {
   const [modalMode, setModalMode] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [machineToDelete, setMachineToDelete] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
 
   // 👉 Open Add Task Modal
   const openModalForAddMachine = () => {
@@ -209,20 +210,24 @@ export const TasksProvider = ({ children }) => {
     }
   };
 
+  // 🧠 WebSocket effect with date check
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8000');
 
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
       if (message.type === 'NEW_JOB') {
-        setTodayJobs((prev) => [...prev, message.data]);
-        // getMachines();
-        getTodayJobs();
+        const today = new Date().toISOString().slice(0, 10);
+        if (selectedDate === today) {
+          setTodayJobs((prev) => [...prev, message.data]);
+        } else {
+          console.log("Real-time job skipped (user is not viewing today).");
+        }
       }
-  };
+    };
 
-  return () => ws.close();
-}, []);
+    return () => ws.close();
+  }, [selectedDate]);
 
   return (
     <TaskContext.Provider
