@@ -6,6 +6,8 @@ import cookieParser from 'cookie-parser';
 import userRoutes from './routes/userRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import { errorHandler, notFound } from './helpers/errorhandler.js';
+import http from 'http';
+import { WebSocketServer } from 'ws';
 
 dotenv.config();
 connectDB();
@@ -26,5 +28,25 @@ app.use('/api/v1', taskRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
+
+let clients = [];
+
+wss.on('connection', (ws) => {
+  clients.push(ws);
+
+  ws.on('close', () => {
+    clients = clients.filter((client) => client !== ws);
+  });
+});
+
+export const broadcastNewJob = (job) => {
+  const payload = JSON.stringify({ type: 'NEW_JOB', data: job });
+  clients.forEach((client) => {
+    if (client.readyState === 1) client.send(payload);
+  });
+};
+
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -209,6 +209,21 @@ export const TasksProvider = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:8000');
+
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'NEW_JOB') {
+        setTodayJobs((prev) => [...prev, message.data]);
+        // getMachines();
+        getTodayJobs();
+      }
+  };
+
+  return () => ws.close();
+}, []);
+
   return (
     <TaskContext.Provider
       value={{

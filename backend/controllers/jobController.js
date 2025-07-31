@@ -1,6 +1,7 @@
 import Job from '../models/Job.js';
 import asyncHandler from 'express-async-handler';
 import { parseISO, startOfDay, endOfDay } from 'date-fns';
+import { broadcastNewJob } from '../server.js';
 
 export const createJob = asyncHandler(async (req, res) => {
   const { title, description, rfid, machineId, jobCount, rejectionCount } = req.body;
@@ -16,6 +17,7 @@ export const createJob = asyncHandler(async (req, res) => {
     rejectionCount: typeof rejectionCount === 'number' ? rejectionCount : 0
   });
 
+  broadcastNewJob(job); // <-- broadcast to WebSocket clients
   await job.save();
   res.status(201).json(job);
 });
