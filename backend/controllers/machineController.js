@@ -38,6 +38,23 @@ export const updateMachine = asyncHandler(async (req, res) => {
   res.status(200).json(updatedMachine);
 });
 
+export const deleteMachine = asyncHandler(async (req, res) => {
+  const machineId = req.params.id;
+
+  const machine = await MachineDetails.findOne({
+    _id: machineId,
+    user: req.user._id,
+  });
+
+  if (!machine) {
+    res.status(404);
+    throw new Error("Machine not found");
+  }
+
+  await machine.deleteOne();
+
+  res.status(200).json({ message: "Machine deleted successfully" });
+});
 
 export const getMachines = asyncHandler(async (req, res) => {
   const machines = await MachineDetails.find({ user: req.user._id });

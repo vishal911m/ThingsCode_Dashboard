@@ -13,6 +13,7 @@ import {
   createMachine,
   getMachines,
   updateMachine,
+  deleteMachine,
 } from '../controllers/machineController.js';
 
 import { protect } from '../middleware/authMiddleware.js';
@@ -49,6 +50,7 @@ router.delete('/jobs/:id', deleteJob);
 router.post('/tasks/machines', createMachine); // POST: Create a machine
 router.get('/tasks/machines', getMachines); // GET: Get all machines for user
 router.put('/tasks/machines/:id', updateMachine); // ✅ Update a machine by ID
+router.delete('/tasks/machines/:id', deleteMachine); // ✅ Delete machine
 
 
 export default router;
