@@ -47,7 +47,11 @@ function Header() {
       <div className="flex items-center gap-8">
         {/* Shift and Date */}
         <div className="flex flex-col text-right">
-          <span className="text-sm text-green-400 font-semibold">{shiftLabel}</span>
+          {userId && (
+            <span className="text-sm font-semibold text-green-400">
+              {shiftLabel}
+            </span>
+          )}
           <span className="text-sm text-gray-300">{currentDate}</span>
         </div>
 
