@@ -1,5 +1,5 @@
 'use client';
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { formatDateLocal } from '@/utils/date';
@@ -223,6 +223,54 @@ export const TasksProvider = ({ children }) => {
     }
   };
 
+  const processedMachines = useMemo(() => {
+    return machines.map((machine) => {
+      const matchingJobs = todayJobs.filter(
+        (job) => job.machineId === machine._id
+      );
+
+      const productionCount = matchingJobs.reduce(
+        (sum, job) => sum + (job.jobCount || 0),
+        0
+      );
+
+      const rejectionCount = matchingJobs.reduce(
+        (sum, job) => sum + (job.rejectionCount || 0),
+        0
+      );
+
+      const latestJob = matchingJobs.reduce(
+        (latest, current) =>
+          !latest || new Date(current.createdAt) > new Date(latest.createdAt)
+            ? current
+            : latest,
+        null
+      );
+
+      const latestRFID = latestJob?.rfid;
+      const latestStatus = latestJob?.status ?? 'off';
+
+      let liveToolName = 'N/A';
+      if (latestRFID && Array.isArray(machine.jobList)) {
+        for (const jobEntry of machine.jobList) {
+          const [name, value] = Object.entries(jobEntry)[0];
+          if (value === latestRFID) {
+            liveToolName = name;
+            break;
+          }
+        }
+      }
+
+      return {
+        ...machine,
+        productionCount,
+        rejectionCount,
+        liveToolName,
+        latestStatus,
+      };
+    });
+  }, [machines, todayJobs]);
+
   // Update liveData based on selectedDate
   useEffect(() => {
     const isToday = moment(selectedDate).isSame(moment(), 'day');
@@ -271,9 +319,10 @@ export const TasksProvider = ({ children }) => {
         machineToDelete,
         showDeleteModal,
         selectedDate,        // ✅ added
-        setSelectedDate,     // ✅ added
+        processedMachines,
         liveData,            // ✅ added
         createJob,
+        setSelectedDate,     // ✅ added
         getJobs,
         getJobById,
         updateJob,
@@ -286,7 +335,7 @@ export const TasksProvider = ({ children }) => {
         openModalForAddMachine,
         openModalForEditMachine,
         openModalForDeleteMachine,
-        closeModal
+        closeModal,
       }}
     >
       {children}
