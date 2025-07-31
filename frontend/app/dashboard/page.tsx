@@ -12,6 +12,7 @@ export default function DashboardPage() {
     machines,
     getMachines,
     openModalForAddMachine,
+    openModalForEditMachine,
     getJobs,
     jobs,
     getTodayJobs,
@@ -112,14 +113,20 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         {machinesWithProduction.map((machine: any) => (
-          <Link key={machine._id} href={`/machine/${machine._id}`}>
+          
             <div className="w-[15rem] rounded-lg overflow-hidden shadow hover:shadow-md transition cursor-pointer border border-gray-300 bg-white">
 
               {/* Top - Machine Name + Icons */}
               <div className="bg-red-600 text-white p-2 flex justify-between items-center">
+                <Link key={machine._id} href={`/machine/${machine._id}`}>
                 <h2 className="text-md font-bold">{machine.machineName}</h2>
+                </Link>
                 <div className="flex gap-2 text-white text-sm">
-                  <button title="Edit" className="hover:text-gray-200">✏️</button>
+                  <button title="Edit" className="hover:text-gray-200"
+                    onClick={()=>openModalForEditMachine(machine)}
+                  > 
+                    ✏️
+                  </button>
                   <button title="Delete" className="hover:text-gray-200">🗑️</button>
                 </div>
               </div>
@@ -161,7 +168,7 @@ export default function DashboardPage() {
               </div>
 
             </div>
-          </Link>
+          
         ))}
 
         <button

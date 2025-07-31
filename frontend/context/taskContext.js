@@ -136,13 +136,15 @@ export const TasksProvider = ({ children }) => {
   const updateJob = async (id, updatedData) => {
     try {
       setLoading(true);
-      const res = await axios.put(`${BASE_URL}/jobs/${id}`, updatedData, {
+      const res = await axios.put(`${BASE_URL}/tasks/machines/${id}`, updatedData, {
         withCredentials: true,
       });
       setJobs((prev) =>
         prev.map((job) => (job._id === id ? res.data : job))
       );
-      toast.success('Job updated successfully');
+      getMachines();
+      toast.success('Updated successfully');
+      closeModal();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update job');
     } finally {
@@ -168,6 +170,7 @@ export const TasksProvider = ({ children }) => {
   // --- MACHINE FUNCTIONS ---
 
   const createMachine = async (machineData) => {
+    //console.log("Sending to backend:", machineData); // ← ADD THIS
     try {
       setLoading(true);
       const res = await axios.post(`${BASE_URL}/tasks/machines`, machineData, {
@@ -175,6 +178,7 @@ export const TasksProvider = ({ children }) => {
       });
       setMachines((prev) => [...prev, res.data]);
       toast.success('Machine created successfully');
+      closeModal();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create machine');
     } finally {
@@ -204,6 +208,8 @@ export const TasksProvider = ({ children }) => {
         machines,
         loading,
         isEditing,
+        modalMode,
+        activeMachine,
         createJob,
         getJobs,
         getJobById,
