@@ -4,6 +4,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { formatDateLocal } from '@/utils/date';
 import { useUserContext } from './userContext';
+import moment from 'moment';
 
 const TaskContext = createContext();
 
@@ -22,7 +23,9 @@ export const TasksProvider = ({ children }) => {
   const [modalMode, setModalMode] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [machineToDelete, setMachineToDelete] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [jobList, setJobList] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(moment().startOf('day').toDate());
+  const [liveData, setLiveData] = useState(true);
 
   // 👉 Open Add Task Modal
   const openModalForAddMachine = () => {
@@ -209,24 +212,50 @@ export const TasksProvider = ({ children }) => {
       setLoading(false);
     }
   };
+  
+  // Load jobs for selected date
+  const loadJobsByDate = async (date) => {
+    try {
+      const res = await axios.get(`/api/v1/jobs?date=${date.toISOString()}`);
+      setJobList(res.data);
+    } catch (err) {
+      console.error('Error loading jobs:', err);
+    }
+  };
 
-  // 🧠 WebSocket effect with date check
+  // Update liveData based on selectedDate
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8000');
+    const isToday = moment(selectedDate).isSame(moment(), 'day');
+    setLiveData(isToday);
+  }, [selectedDate]);
 
-    ws.onmessage = (event) => {
+  // WebSocket: only listen when liveData is true
+  useEffect(() => {
+    if (!liveData) return;
+
+    const socket = new WebSocket('ws://localhost:8000');
+
+    socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
+
       if (message.type === 'NEW_JOB') {
-        const today = new Date().toISOString().slice(0, 10);
-        if (selectedDate === today) {
-          setTodayJobs((prev) => [...prev, message.data]);
-        } else {
-          console.log("Real-time job skipped (user is not viewing today).");
+        const newJob = message.data;
+        const jobDate = moment(newJob.createdAt).startOf('day');
+        const today = moment().startOf('day');
+
+        if (jobDate.isSame(today)) {
+          setTodayJobs((prev) => [newJob, ...prev]);
         }
       }
     };
 
-    return () => ws.close();
+    return () => socket.close();
+  }, [liveData]);
+
+  // Refetch jobs on selected date change
+  useEffect(() => {
+    const dateStr = moment(selectedDate).format('YYYY-MM-DD');
+    getJobsByDate(dateStr);
   }, [selectedDate]);
 
   return (
@@ -241,6 +270,9 @@ export const TasksProvider = ({ children }) => {
         activeMachine,
         machineToDelete,
         showDeleteModal,
+        selectedDate,        // ✅ added
+        setSelectedDate,     // ✅ added
+        liveData,            // ✅ added
         createJob,
         getJobs,
         getJobById,

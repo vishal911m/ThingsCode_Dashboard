@@ -18,14 +18,14 @@ export default function DashboardPage() {
     getTodayJobs,
     todayJobs,
     getJobsByDate,
-    openModalForDeleteMachine
+    openModalForDeleteMachine,
+    selectedDate, 
+    setSelectedDate
   } = useTasks();
-
-  const [selectedDate, setSelectedDate] = useState(new Date());
 
   useEffect(() => {
     getMachines();
-    getTodayJobs();
+    // getTodayJobs();
   }, []);
 
   // Enhance each machine with production & rejection count
@@ -82,33 +82,6 @@ export default function DashboardPage() {
       latestStatus,
     };
   });
-
-  // useEffect(() => {
-  //   const socket = new WebSocket('ws://localhost:8000');
-
-  //   socket.onopen = () => {
-  //     console.log('WebSocket connected ✅');
-  //   };
-
-  //   socket.onmessage = (event) => {
-  //     console.log('WebSocket message received:', event.data);
-  //     const message = JSON.parse(event.data);
-  //     if (message.type === 'new_job') {
-  //       getTodayJobs(); // refetch jobs
-  //     }
-  //   };
-
-  //   socket.onerror = (err) => {
-  //     console.error('WebSocket error:', err);
-  //   };
-
-  //   socket.onclose = () => {
-  //     console.log('WebSocket connection closed');
-  //   };
-
-  //   // Clean up on unmount
-  //   return () => socket.close();
-  // }, [getTodayJobs]);
 
   return (
     <div className="dashboard p-6">
