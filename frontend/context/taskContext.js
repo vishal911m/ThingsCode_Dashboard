@@ -306,6 +306,11 @@ export const TasksProvider = ({ children }) => {
     getJobsByDate(dateStr);
   }, [selectedDate]);
 
+  useEffect(() => {
+    getMachines();
+    // getTodayJobs();
+  }, []);
+
   return (
     <TaskContext.Provider
       value={{
@@ -318,11 +323,11 @@ export const TasksProvider = ({ children }) => {
         activeMachine,
         machineToDelete,
         showDeleteModal,
-        selectedDate,        // ✅ added
+        selectedDate,        
         processedMachines,
-        liveData,            // ✅ added
+        liveData,           
         createJob,
-        setSelectedDate,     // ✅ added
+        setSelectedDate,     
         getJobs,
         getJobById,
         updateJob,

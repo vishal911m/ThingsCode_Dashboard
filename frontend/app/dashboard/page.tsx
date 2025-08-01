@@ -18,13 +18,7 @@ export default function DashboardPage() {
     selectedDate, 
     setSelectedDate, 
     processedMachines,
-  } = useTasks();
-
-  useEffect(() => {
-    getMachines();
-    // getTodayJobs();
-  }, []);
-  
+  } = useTasks();  
 
   return (
     <div className="dashboard p-6">
