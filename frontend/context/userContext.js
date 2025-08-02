@@ -88,7 +88,7 @@ export const UserContextProvider = ({ children }) => {
       router.push("/");
     } catch (error) {
       console.log("Error logging in user", error);
-      toast.error(error.response.data.message);
+      // toast.error(error.response.data.message);
     }
   };
 
@@ -106,19 +106,6 @@ export const UserContextProvider = ({ children }) => {
       toast.error(error.response?.data?.message || 'Logout failed');
     }
   };
-
-  // // ---------- Get Logged In User ----------
-  // const getUser = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const res = await axios.get(`${serverUrl}/api/v1/user`);
-  //     setUser((prev) => ({ ...prev, ...res.data }));
-  //   } catch (error) {
-  //     toast.error(error.response?.data?.message || 'User fetch failed');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   // get user details
   const getUser = async () => {
@@ -139,7 +126,7 @@ export const UserContextProvider = ({ children }) => {
     } catch (error) {
       console.log("Error getting user details", error);
       setLoading(false);
-      toast.error(error.response.data.message);
+      // toast.error(error.response.data.message);
     }
   };
 

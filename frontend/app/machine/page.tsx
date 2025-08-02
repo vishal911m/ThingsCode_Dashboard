@@ -1,73 +1,110 @@
 'use client'
 
-import { useEffect } from 'react'
-import Modal from '../Components/Modal/Modal'
-import DeleteModal from '../Components/DeleteModal/DeleteModal'
-import { useTasks } from '@/context/taskContext'
+import React, { useState } from 'react'
 
 export default function MachinePage() {
-  const {
-    machines,
-    getTasks,
-    openModalForAddMachine,
-    openModalForEditMachine,
-    openDeleteModal,
-    isModalOpen,
-    isDeleteModalOpen,
-  } = useTasks()
-
-  useEffect(() => {
-    getTasks()
-  }, [])
+  const jobList = ["Job #1 - Running", "Job #2 - Completed", "Job #3 - Queued"];
+  const [selectedJob, setSelectedJob] = useState("Job #1")
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Machines</h1>
-        <button
-          onClick={openModalForAddMachine}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          + Add Machine
-        </button>
+    <div className="p-t-1 space-y-6">
+
+      {/* 🔷 Top Section - Machine Info */}
+      <div className="bg-white shadow rounded p-1 border space-y-4">
+        <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-4">
+
+          {/* Machine Name - Left */}
+          <h1 className="text-2xl font-bold text-left w-full md:w-1/3">Machine: ABC-123</h1>
+
+          {/* Status - Center */}
+          <div className="text-center w-full md:w-1/3">
+            <span className="text-lg font-medium">Status: </span>
+            <span className="font-semibold text-green-600">On</span>
+          </div>
+
+          {/* Job Selector - Right */}
+          <div className="w-full md:w-1/3 flex justify-end">
+            <select
+              value={selectedJob}
+              onChange={(e) => setSelectedJob(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-2 text-sm shadow-sm"
+            >
+              {jobList.map((job, index) => (
+                <option key={index} value={job}>
+                  {job}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Job List */}
+        
       </div>
 
-      {machines.length === 0 ? (
-        <p className="text-gray-600">No machines found.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {machines.map((machine : any) => (
-            <div
-              key={machine._id}
-              className="bg-white shadow-md rounded-lg p-4 space-y-2 border"
-            >
-              <h2 className="text-xl font-semibold">
-                {machine.machineName}
-              </h2>
-              <p className="text-gray-700">
-                Type: {machine.machineType}
-              </p>
-              <div className="flex justify-between mt-3">
-                <button
-                  onClick={() => openModalForEditMachine(machine)}
-                  className="text-sm text-blue-600 hover:underline"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => openDeleteModal(machine)}
-                  className="text-sm text-red-600 hover:underline"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* 🔷 Bottom Section */}
+      <div className="flex flex-col lg:flex-row gap-6">
 
-      {isModalOpen && <Modal />}
-      {isDeleteModalOpen && <DeleteModal />}
+        {/* 🟩 Left Column */}
+        <div className="space-y-4 w-full lg:w-[300px] flex-shrink-0">
+
+          {/* Row 1 - Component Count */}
+          <div className="bg-white p-4 rounded shadow border">
+            <h3 className="text-xl font-semibold mb-2">Component Count</h3>
+            <h1 className="text-base">Total Count: 1234</h1>
+            <h1 className="text-base">Rejection Count: 12</h1>
+          </div>
+
+          {/* Row 2 - Historic Data */}
+          <div className="bg-white p-4 rounded shadow border">
+            <h3 className="text-xl font-semibold mb-2">Historic Data</h3>
+            {/* Month and Year Input */}
+            <h1 className="text-base">
+              Month:&nbsp;
+              <input
+                type="month"
+                className="border rounded px-2 py-1 text-sm"
+                value={new Date().toISOString().slice(0, 7)} // Default: current YYYY-MM
+                onChange={() => {}} // You can hook this up later
+              />
+            </h1>
+                      
+            {/* Total Count */}
+            <h1 className="text-base">Total Count: 12345</h1>
+                      
+            {/* Rejection Count */}
+            <h1 className="text-base">Rejection Count: 123</h1>
+          </div>
+
+          {/* Row 3 - Live Tool Data */}
+          <div className="bg-white p-4 rounded shadow border">
+            <h3 className="text-xl font-semibold mb-2">Live Tool Data</h3>
+            <p className="text-gray-600">Tool RPM, temperature, and status</p>
+          </div>
+        </div>
+
+        {/* 🟦 Right Column */}
+        <div className="space-y-4 flex-grow">
+
+          {/* Top - Production Chart + Machine Chart */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white p-4 rounded shadow border">
+              <h3 className="text-xl font-semibold mb-2">Production Chart</h3>
+              <div className="h-40 bg-gray-100 rounded">[Chart Placeholder]</div>
+            </div>
+            <div className="bg-white p-4 rounded shadow border">
+              <h3 className="text-xl font-semibold mb-2">Machine Chart</h3>
+              <div className="h-40 bg-gray-100 rounded">[Chart Placeholder]</div>
+            </div>
+          </div>
+
+          {/* Bottom - Live Data Bar Chart */}
+          <div className="bg-white p-4 rounded shadow border">
+            <h3 className="text-xl font-semibold mb-2">Live Data (Bar Chart)</h3>
+            <div className="h-48 bg-gray-100 rounded">[Bar Chart Placeholder]</div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

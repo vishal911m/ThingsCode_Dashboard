@@ -17,7 +17,6 @@ export const TasksProvider = ({ children }) => {
   const [machines, setMachines] = useState([]);
   const [machine, setMachine] = useState({});
   const [loading, setLoading] = useState(false);
-  const userId = useUserContext().user._id;
   const [isEditing, setIsEditing] = useState(false);
   const [activeMachine, setActiveMachine] = useState(null);
   const [modalMode, setModalMode] = useState("");
@@ -26,6 +25,9 @@ export const TasksProvider = ({ children }) => {
   const [jobList, setJobList] = useState([]);
   const [selectedDate, setSelectedDate] = useState(moment().startOf('day').toDate());
   const [liveData, setLiveData] = useState(true);
+
+  const { user } = useUserContext();
+  const userId = user?._id;
 
   // 👉 Open Add Task Modal
   const openModalForAddMachine = () => {
@@ -301,15 +303,20 @@ export const TasksProvider = ({ children }) => {
   }, [liveData]);
 
   // Refetch jobs on selected date change
+  // 👇 Wait for userId before calling API
   useEffect(() => {
+    if (!userId) return; // wait until user context is ready
+
     const dateStr = moment(selectedDate).format('YYYY-MM-DD');
     getJobsByDate(dateStr);
-  }, [selectedDate]);
+  }, [selectedDate, userId]);
 
   useEffect(() => {
+    if (!userId) return;
+
     getMachines();
     // getTodayJobs();
-  }, []);
+  }, [userId]);
 
   return (
     <TaskContext.Provider

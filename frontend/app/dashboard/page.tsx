@@ -7,10 +7,12 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import MachineItem from '../Components/MachineItem/MachineItem';
+import useRedirect from '@/hooks/useUserRedirect';
 
 export default function DashboardPage() {
+  useRedirect("/login");
+
   const {
-    getMachines,
     openModalForAddMachine,
     openModalForEditMachine,
     getJobsByDate,

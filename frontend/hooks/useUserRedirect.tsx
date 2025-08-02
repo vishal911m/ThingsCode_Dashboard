@@ -8,6 +8,6 @@ export default function useRedirect(redirect: string) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!user) router.push('/login');
-  }, [user]);
+    if (!user || !user.email) router.push(redirect);
+  }, [user, redirect, router]);
 }

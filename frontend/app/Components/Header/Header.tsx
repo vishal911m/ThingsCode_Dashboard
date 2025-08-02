@@ -3,6 +3,7 @@ import { FaSyncAlt, FaUser, FaInfoCircle, FaCog, FaDesktop, FaSignOutAlt } from 
 import React from "react";
 import moment from "moment";
 import { useUserContext } from "@/context/userContext";
+import Link from "next/link";
 
 function Header() {
   const currentDate = moment().format("DD / MM / YYYY");
@@ -57,9 +58,11 @@ function Header() {
 
         {/* Icons */}
         <div className="flex items-center gap-4 text-lg">
-          <button className="p-2 rounded-full hover:bg-gray-700">
-            <FaDesktop />
-          </button>
+          <Link href="/dashboard">
+            <button className="p-2 rounded-full hover:bg-gray-700">
+              <FaDesktop />
+            </button>
+          </Link>
           <button className="p-2 rounded-full hover:bg-gray-700">
             <FaCog />
           </button>
