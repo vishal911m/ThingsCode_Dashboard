@@ -254,12 +254,9 @@ export const TasksProvider = ({ children }) => {
 
       let liveToolName = 'N/A';
       if (latestRFID && Array.isArray(machine.jobList)) {
-        for (const jobEntry of machine.jobList) {
-          const [name, value] = Object.entries(jobEntry)[0];
-          if (value === latestRFID) {
-            liveToolName = name;
-            break;
-          }
+        const matchedJob = machine.jobList.find(job => job.uid === latestRFID);
+        if (matchedJob) {
+          liveToolName = matchedJob.jobName || 'Unnamed Tool';
         }
       }
 
