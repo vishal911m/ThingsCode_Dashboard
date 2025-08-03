@@ -1,8 +1,10 @@
 'use client'
 
 import { useTasks } from '@/context/taskContext';
+import moment from 'moment';
 import { useParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Bar, BarChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 type Machine = {
   _id: string;
@@ -18,7 +20,7 @@ export default function MachinePage() {
   const jobList = ["Job #1 - Running", "Job #2 - Completed", "Job #3 - Queued"];
   const [selectedJob, setSelectedJob] = useState("Job #1");
   const { id } = useParams(); // dynamic route param
-  const { processedMachines } = useTasks();
+  const { processedMachines, todayJobs } = useTasks();
   const [machine, setMachine] = useState<Machine | null>(null);
 
   useEffect(() => {
@@ -28,6 +30,26 @@ export default function MachinePage() {
       setMachine(found);
     }
   }, [id, processedMachines]);
+
+  const hourlyData = useMemo(() => {
+  const data = Array.from({ length: 24 }, (_, hour) => ({
+    hour,
+    production: 0,
+    rejection: 0,
+  }));
+
+  if (!machine) return data;
+
+  for (const job of todayJobs) {
+    if (job.machineId === machine._id) {
+      const jobHour = moment(job.createdAt).hour();
+      data[jobHour].production += job.jobCount || 0;
+      data[jobHour].rejection += job.rejectionCount || 0;
+    }
+  }
+
+  return data;
+}, [todayJobs, machine]);
 
   if (!machine) {
     return <div className="p-4">Loading machine details...</div>;
@@ -132,7 +154,21 @@ export default function MachinePage() {
           {/* Bottom - Live Data Bar Chart */}
           <div className="bg-white p-4 rounded shadow border">
             <h3 className="text-xl font-semibold mb-2">Live Data (Bar Chart)</h3>
-            <div className="h-48 bg-gray-100 rounded">[Bar Chart Placeholder]</div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={hourlyData}
+                  margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                >
+                  <XAxis dataKey="hour" label={{ value: 'Time (0-23)', position: 'insideBottomRight', offset: -5 }} />
+                  <YAxis label={{ value: 'Count', angle: -90, position: 'insideLeft' }} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="production" stackId="a" fill="#3B82F6" name="Production Count" />
+                  <Bar dataKey="rejection" stackId="a" fill="#EF4444" name="Rejection Count" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
       </div>
