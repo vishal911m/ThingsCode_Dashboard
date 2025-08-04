@@ -20,8 +20,9 @@ export default function MachinePage() {
   const jobList = ["Job #1 - Running", "Job #2 - Completed", "Job #3 - Queued"];
   const [selectedJob, setSelectedJob] = useState("Job #1");
   const { id } = useParams(); // dynamic route param
-  const { processedMachines, todayJobs } = useTasks();
+  const { processedMachines, todayJobs, getJobsByMonth, selectedDate, setSelectedDate} = useTasks();
   const [machine, setMachine] = useState<Machine | null>(null);
+  const [monthlyJobs, setMonthlyJobs] = useState<any[]>([]); // ⬅️ Add this
 
   useEffect(() => {
     if (processedMachines.length === 0) return;
@@ -30,6 +31,17 @@ export default function MachinePage() {
       setMachine(found);
     }
   }, [id, processedMachines]);
+
+  // Fetch jobs for selected month
+  useEffect(() => {
+    const year = selectedDate.getFullYear();
+    const month = selectedDate.getMonth() + 1;
+
+    (async () => {
+      const jobs = await getJobsByMonth(year, month); // ⬅️ Assumes this returns the job array
+      setMonthlyJobs(jobs);
+    })();
+  }, [selectedDate, getJobsByMonth]);
 
   const hourlyData = useMemo(() => {
   const data = Array.from({ length: 24 }, (_, hour) => ({
@@ -51,9 +63,19 @@ export default function MachinePage() {
   return data;
 }, [todayJobs, machine]);
 
-  if (!machine) {
-    return <div className="p-4">Loading machine details...</div>;
-  }
+  // 📊 Historic Totals
+  const monthlyStats = useMemo(() => {
+  if (!machine || !Array.isArray(monthlyJobs)) {
+      return { production: 0, rejection: 0 };
+    }
+
+    const machineJobs = monthlyJobs.filter((job) => job.machineId === machine._id);
+
+    const production = machineJobs.reduce((sum, job) => sum + (job.jobCount || 0), 0);
+    const rejection = machineJobs.reduce((sum, job) => sum + (job.rejectionCount || 0), 0);
+
+    return { production, rejection };
+  }, [monthlyJobs, machine]);
 
   return (
     <div className="p-t-1 space-y-6">
@@ -64,14 +86,14 @@ export default function MachinePage() {
 
           {/* Machine Name - Left */}
           <h1 className="text-2xl font-bold text-left w-full md:w-1/3">
-            Machine: {machine.machineName}
+            Machine: {machine?.machineName}
           </h1>
 
           {/* Status - Center */}
           <div className="text-center w-full md:w-1/3">
             <span className="text-lg font-medium">Status: </span>
-            <span className={`font-semibold ${machine.latestStatus === 'on' ? 'text-green-600' : 'text-red-500'}`}>
-              {machine.latestStatus?.toUpperCase()}
+            <span className={`font-semibold ${machine?.latestStatus === 'on' ? 'text-green-600' : 'text-red-500'}`}>
+              {machine?.latestStatus?.toUpperCase()}
             </span>
           </div>
 
@@ -101,11 +123,11 @@ export default function MachinePage() {
         {/* 🟩 Left Column */}
         <div className="space-y-4 w-full lg:w-[300px] flex-shrink-0">
 
-          {/* Row 1 - Component Count */}
+          {/* Row 1 - Live Component Count */}
           <div className="bg-white p-4 rounded shadow border">
             <h3 className="text-xl font-semibold mb-2">Component Count</h3>
-            <h1 className="text-base">Production Count: {machine.productionCount}</h1>
-            <h1 className="text-base">Rejection Count: {machine.rejectionCount}</h1>
+            <h1 className="text-base">Production Count: {machine?.productionCount}</h1>
+            <h1 className="text-base">Rejection Count: {machine?.rejectionCount}</h1>
           </div>
 
           {/* Row 2 - Historic Data */}
@@ -117,22 +139,25 @@ export default function MachinePage() {
               <input
                 type="month"
                 className="border rounded px-2 py-1 text-sm"
-                value={new Date().toISOString().slice(0, 7)} // Default: current YYYY-MM
-                onChange={() => {}} // You can hook this up later
+                value={selectedDate.toISOString().slice(0, 7)}
+                onChange={(e) => {
+                  const [year, month] = e.target.value.split('-').map(Number);
+                  setSelectedDate(new Date(year, month - 1));
+                }}
               />
             </h1>
                       
             {/* Total Count */}
-            <h1 className="text-base">Total Count: 12345</h1>
+            <h1 className="text-base">Total Count: {monthlyStats.production}</h1>
                       
             {/* Rejection Count */}
-            <h1 className="text-base">Rejection Count: 123</h1>
+            <h1 className="text-base">Rejection Count: {monthlyStats.rejection}</h1>
           </div>
 
           {/* Row 3 - Live Tool Data */}
           <div className="bg-white p-4 rounded shadow border">
             <h3 className="text-xl font-semibold mb-2">Live Tool Data</h3>
-            <span className="font-semibold">{machine.liveToolName}</span>
+            <span className="font-semibold">{machine?.liveToolName}</span>
           </div>
         </div>
 
@@ -162,7 +187,14 @@ export default function MachinePage() {
                 >
                   <XAxis dataKey="hour" label={{ value: 'Time (0-23)', position: 'insideBottomRight', offset: -5 }} />
                   <YAxis label={{ value: 'Count', angle: -90, position: 'insideLeft' }} />
-                  <Tooltip />
+                  <Tooltip
+                    formatter={(value: number, name: string) => [`${value}`, name]}
+                    labelFormatter={(label: number) => {
+                      const suffix = label < 12 ? 'AM' : 'PM';
+                      const hourFormatted = label === 0 ? 12 : label > 12 ? label - 12 : label;
+                      return `Time: ${hourFormatted} ${suffix}`;
+                    }}
+                  />
                   <Legend />
                   <Bar dataKey="production" stackId="a" fill="#3B82F6" name="Production Count" />
                   <Bar dataKey="rejection" stackId="a" fill="#EF4444" name="Rejection Count" />

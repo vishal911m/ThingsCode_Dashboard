@@ -7,6 +7,7 @@ import {
   deleteJob,
   getTodayJobs,
   getJobsByDate,
+  getJobsByMonth,
 } from '../controllers/jobController.js';
 
 import {
@@ -44,6 +45,9 @@ router.put('/jobs/:id', updateJob);
 
 // DELETE: Delete job by ID
 router.delete('/jobs/:id', deleteJob);
+
+// Get jobs my month
+router.get('/jobs/by-month', getJobsByMonth);
 
 // ✅ Machine Routes
 //

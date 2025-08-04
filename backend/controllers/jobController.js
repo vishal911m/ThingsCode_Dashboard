@@ -1,6 +1,6 @@
 import Job from '../models/Job.js';
 import asyncHandler from 'express-async-handler';
-import { parseISO, startOfDay, endOfDay } from 'date-fns';
+import { parseISO, startOfDay, endOfDay, startOfMonth, endOfMonth} from 'date-fns';
 import { broadcastNewJob } from '../server.js';
 
 export const createJob = asyncHandler(async (req, res) => {
@@ -56,6 +56,34 @@ export const getJobsByDate = asyncHandler(async (req, res) => {
 
   const start = startOfDay(parsedDate); // 00:00 IST
   const end = endOfDay(parsedDate);     // 23:59:59 IST
+
+  const jobs = await Job.find({
+    user: req.user._id,
+    createdAt: { $gte: start, $lte: end }
+  });
+
+  res.status(200).json(jobs);
+});
+
+export const getJobsByMonth = asyncHandler(async (req, res) => {
+  const { year, month } = req.query;
+
+  if (!year || !month) {
+    res.status(400);
+    throw new Error('Year and month are required');
+  }
+
+  // Convert to integers
+  const yearNum = parseInt(year, 10);
+  const monthNum = parseInt(month, 10); // 1-based (Jan = 1)
+
+  if (isNaN(yearNum) || isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+    res.status(400);
+    throw new Error('Invalid year or month');
+  }
+
+  const start = startOfMonth(new Date(yearNum, monthNum - 1)); // JS months are 0-based
+  const end = endOfMonth(start);
 
   const jobs = await Job.find({
     user: req.user._id,
