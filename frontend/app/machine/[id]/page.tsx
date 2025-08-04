@@ -83,6 +83,43 @@ export default function MachinePage() {
     return { production, rejection };
   }, [monthlyJobs, machine]);
 
+  const dailyData = useMemo(() => {
+    if (!machine || !historicData || !monthlyJobs.length) return [];
+
+    const daysInMonth = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth() + 1,
+      0
+    ).getDate();
+
+    const data = Array.from({ length: daysInMonth }, (_, i) => ({
+      day: i + 1,
+      production: 0,
+      rejection: 0,
+    }));
+
+    for (const job of monthlyJobs) {
+      if (job.machineId === machine._id) {
+        const jobDate = moment(job.createdAt);
+
+        // Ensure the job is from the selected month
+        if (
+          jobDate.month() === selectedDate.getMonth() &&
+          jobDate.year() === selectedDate.getFullYear()
+        ) {
+          const jobDay = jobDate.date() - 1; // index from 0
+          if (data[jobDay]) {
+            data[jobDay].production += job.jobCount || 0;
+            data[jobDay].rejection += job.rejectionCount || 0;
+          }
+        }
+      }
+    }
+
+    return data;
+  }, [machine, monthlyJobs, historicData, selectedDate]);
+
+
   return (
     <div className="p-t-1 space-y-6">
       {/* 🔷 Top Section - Machine Info */}
@@ -203,34 +240,43 @@ export default function MachinePage() {
 
           {/* Bottom - Live Data Bar Chart */}
           <div className="bg-white p-4 rounded shadow border">
-            <h3 className="text-xl font-semibold mb-2">Live Data (Bar Chart)</h3>
+            <h3 className="text-xl font-semibold mb-2">
+              {historicData ? 'Monthly Summary (Bar Chart)' : 'Live Data (Bar Chart)'}
+            </h3>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={hourlyData}
-                  margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
-                >
-                  <XAxis dataKey="hour" label={{ value: 'Time (0-23)', position: 'insideBottomRight', offset: -5 }} />
-                  <YAxis label={{ value: 'Count', angle: -90, position: 'insideLeft' }} />
-                  <Tooltip
-                    formatter={(value: number, name: string) =>
-                      historicData ? ['N/A', name] : [`${value}`, name]
-                    }
-                    labelFormatter={(label: number) => {
-                      const suffix = label < 12 ? 'AM' : 'PM';
-                      const hourFormatted = label === 0 ? 12 : label > 12 ? label - 12 : label;
-                      return `Time: ${hourFormatted} ${suffix}`;
-                    }}
-                  />
-                  <Legend />
-                  {!historicData && (
-                    <>
-                      <Bar dataKey="production" stackId="a" fill="#3B82F6" name="Production Count" />
-                      <Bar dataKey="rejection" stackId="a" fill="#EF4444" name="Rejection Count" />
-                    </>
-                  )}
-                </BarChart>
-              </ResponsiveContainer>
+              {historicData && dailyData.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  No data available for this month.
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={historicData ? dailyData : hourlyData}
+                    margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                  >
+                    <XAxis
+                      dataKey={historicData ? 'day' : 'hour'}
+                      label={{
+                        value: historicData ? 'Day of Month' : 'Time (0-23)',
+                        position: 'insideBottomRight',
+                        offset: -5,
+                      }}
+                    />
+                    <YAxis label={{ value: 'Count', angle: -90, position: 'insideLeft' }} />
+                    <Tooltip
+                      formatter={(value: number, name: string) => [`${value}`, name]}
+                      labelFormatter={(label: number) =>
+                        historicData
+                          ? `Day: ${label}`
+                          : `Time: ${label === 0 ? 12 : label > 12 ? label - 12 : label} ${label < 12 ? 'AM' : 'PM'}`
+                      }
+                    />
+                    <Legend />
+                    <Bar dataKey="production" stackId="a" fill="#3B82F6" name="Production Count" />
+                    <Bar dataKey="rejection" stackId="a" fill="#EF4444" name="Rejection Count" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
         </div>
