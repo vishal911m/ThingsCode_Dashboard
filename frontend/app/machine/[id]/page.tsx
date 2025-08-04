@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useTasks } from '@/context/taskContext';
 import moment from 'moment';
@@ -20,7 +20,7 @@ export default function MachinePage() {
   const jobList = ["Job #1 - Running", "Job #2 - Completed", "Job #3 - Queued"];
   const [selectedJob, setSelectedJob] = useState("Job #1");
   const [historicData, setHistoricData] = useState(false);
-  const { id } = useParams(); // dynamic route param
+  const { id } = useParams();
   const { processedMachines, todayJobs, getJobsByMonth, selectedDate, setSelectedDate } = useTasks();
   const [machine, setMachine] = useState<Machine | null>(null);
   const [monthlyJobs, setMonthlyJobs] = useState<any[]>([]);
@@ -33,7 +33,6 @@ export default function MachinePage() {
     }
   }, [id, processedMachines]);
 
-  // Manual fetch on "VIEW" button
   const handleFetchHistoricData = async () => {
     const year = selectedDate.getFullYear();
     const month = selectedDate.getMonth() + 1;
@@ -68,7 +67,6 @@ export default function MachinePage() {
     }
 
     const machineJobs = monthlyJobs.filter((job) => job.machineId === machine._id);
-
     const production = machineJobs.reduce((sum, job) => sum + (job.jobCount || 0), 0);
     const rejection = machineJobs.reduce((sum, job) => sum + (job.rejectionCount || 0), 0);
 
@@ -81,13 +79,10 @@ export default function MachinePage() {
       {/* 🔷 Top Section - Machine Info */}
       <div className="bg-white shadow rounded p-1 border space-y-4">
         <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-4">
-
-          {/* Machine Name - Left */}
           <h1 className="text-2xl font-bold text-left w-full md:w-1/3">
             Machine: {machine?.machineName}
           </h1>
 
-          {/* Status - Center */}
           <div className="text-center w-full md:w-1/3">
             <span className="text-lg font-medium">Status: </span>
             <span className={`font-semibold ${machine?.latestStatus === 'on' ? 'text-green-600' : 'text-red-500'}`}>
@@ -95,7 +90,6 @@ export default function MachinePage() {
             </span>
           </div>
 
-          {/* Job Selector - Right */}
           <div className="w-full md:w-1/3 flex justify-end">
             <select
               value={selectedJob}
@@ -118,14 +112,28 @@ export default function MachinePage() {
         {/* 🟩 Left Column */}
         <div className="space-y-4 w-full lg:w-[300px] flex-shrink-0">
 
-          {/* Row 1 - Live Component Count */}
-          {!historicData && (
-            <div className="bg-white p-4 rounded shadow border">
-              <h3 className="text-xl font-semibold mb-2">Component Count</h3>
-              <h1 className="text-base">Production Count: {machine?.productionCount}</h1>
-              <h1 className="text-base">Rejection Count: {machine?.rejectionCount}</h1>
+          {/* Row 1 - Component Count */}
+          <div className="bg-white p-4 rounded shadow border">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xl font-semibold">Component Count</h3>
+              <button
+                className={`px-3 py-1 rounded text-sm transition-colors ${
+                  !historicData
+                    ? 'bg-green-500 text-white hover:bg-green-600'
+                    : 'bg-gray-300 text-black hover:bg-gray-400'
+                }`}
+                onClick={() => setHistoricData(false)}
+              >
+                LIVE
+              </button>
             </div>
-          )}
+            <h1 className="text-base">
+              Production Count: {historicData ? "N/A" : machine?.productionCount}
+            </h1>
+            <h1 className="text-base">
+              Rejection Count: {historicData ? "N/A" : machine?.rejectionCount}
+            </h1>
+          </div>
 
           {/* Row 2 - Historic Data */}
           <div className="bg-white p-4 rounded shadow border">
@@ -148,7 +156,6 @@ export default function MachinePage() {
                 onChange={(e) => {
                   const [year, month] = e.target.value.split('-').map(Number);
                   setSelectedDate(new Date(year, month - 1));
-                  setHistoricData(false); // reset state if month changes
                 }}
               />
             </div>
@@ -167,7 +174,7 @@ export default function MachinePage() {
         {/* 🟦 Right Column */}
         <div className="space-y-4 flex-grow">
 
-          {/* Top - Production Chart + Machine Chart */}
+          {/* Top Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white p-4 rounded shadow border">
               <h3 className="text-xl font-semibold mb-2">Production Chart</h3>
@@ -179,34 +186,38 @@ export default function MachinePage() {
             </div>
           </div>
 
-          {/* Bottom - Live Data Bar Chart */}
-          {!historicData && (
-            <div className="bg-white p-4 rounded shadow border">
-              <h3 className="text-xl font-semibold mb-2">Live Data (Bar Chart)</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={hourlyData}
-                    margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
-                  >
-                    <XAxis dataKey="hour" label={{ value: 'Time (0-23)', position: 'insideBottomRight', offset: -5 }} />
-                    <YAxis label={{ value: 'Count', angle: -90, position: 'insideLeft' }} />
-                    <Tooltip
-                      formatter={(value: number, name: string) => [`${value}`, name]}
-                      labelFormatter={(label: number) => {
-                        const suffix = label < 12 ? 'AM' : 'PM';
-                        const hourFormatted = label === 0 ? 12 : label > 12 ? label - 12 : label;
-                        return `Time: ${hourFormatted} ${suffix}`;
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="production" stackId="a" fill="#3B82F6" name="Production Count" />
-                    <Bar dataKey="rejection" stackId="a" fill="#EF4444" name="Rejection Count" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+          {/* Bar Chart */}
+          <div className="bg-white p-4 rounded shadow border">
+            <h3 className="text-xl font-semibold mb-2">Live Data (Bar Chart)</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={hourlyData}
+                  margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                >
+                  <XAxis dataKey="hour" label={{ value: 'Time (0-23)', position: 'insideBottomRight', offset: -5 }} />
+                  <YAxis label={{ value: 'Count', angle: -90, position: 'insideLeft' }} />
+                  <Tooltip
+                    formatter={(value: number, name: string) =>
+                      historicData ? ["N/A", name] : [`${value}`, name]
+                    }
+                    labelFormatter={(label: number) => {
+                      const suffix = label < 12 ? 'AM' : 'PM';
+                      const hourFormatted = label === 0 ? 12 : label > 12 ? label - 12 : label;
+                      return `Time: ${hourFormatted} ${suffix}`;
+                    }}
+                  />
+                  <Legend />
+                  {!historicData && (
+                    <>
+                      <Bar dataKey="production" stackId="a" fill="#3B82F6" name="Production Count" />
+                      <Bar dataKey="rejection" stackId="a" fill="#EF4444" name="Rejection Count" />
+                    </>
+                  )}
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
