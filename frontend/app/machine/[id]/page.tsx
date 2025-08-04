@@ -127,7 +127,11 @@ export default function MachinePage() {
                     ? 'bg-green-500 text-white hover:bg-green-600'
                     : 'bg-gray-300 text-black hover:bg-gray-400'
                 }`}
-                onClick={() => setHistoricData(false)}
+                onClick={() => {
+                  setHistoricData(false);
+                  setMonthlyJobs([]); // optional but safe
+                  setSelectedDate(new Date()); // reset month picker to current month
+                }}
               >
                 LIVE
               </button>

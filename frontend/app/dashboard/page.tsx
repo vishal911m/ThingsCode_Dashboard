@@ -20,7 +20,11 @@ export default function DashboardPage() {
     selectedDate, 
     setSelectedDate, 
     processedMachines,
-  } = useTasks();  
+  } = useTasks(); 
+  
+  useEffect(() => {
+    setSelectedDate(new Date()); // Reset to today on dashboard mount
+  }, []);
 
   return (
     <div className="dashboard p-6">
