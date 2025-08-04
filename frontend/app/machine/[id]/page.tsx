@@ -43,14 +43,23 @@ export default function MachinePage() {
     }
   }, [id, processedMachines]);
 
-  // Manual fetch on "VIEW" button
-  const handleFetchHistoricData = async () => {
-    const year = selectedDate.getFullYear();
-    const month = selectedDate.getMonth() + 1;
-    const jobs = await getJobsByMonth(year, month);
-    setMonthlyJobs(jobs);
-    setHistoricViewDate(new Date(selectedDate)); // Lock in date for rendering
-    setHistoricData(true);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!historicData) return;
+
+      const year = selectedDate.getFullYear();
+      const month = selectedDate.getMonth() + 1;
+      const jobs = await getJobsByMonth(year, month);
+      setMonthlyJobs(jobs);
+      setHistoricViewDate(new Date(selectedDate));
+    };
+
+    fetchData();
+  }, [selectedDate, historicData]);
+
+
+  const handleToggleHistoricData = () => {
+    setHistoricData((prev) => !prev);
   };
 
   const hourlyData = useMemo(() => {
@@ -191,10 +200,10 @@ export default function MachinePage() {
               <button
                 className={`px-3 py-1 rounded text-sm transition-colors ${
                   historicData
-                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                    ? 'bg-green-500 text-white hover:bg-green-600'
                     : 'bg-gray-300 text-black hover:bg-gray-400'
                 }`}
-                onClick={handleFetchHistoricData}
+                onClick={handleToggleHistoricData}
               >
                 VIEW
               </button>
