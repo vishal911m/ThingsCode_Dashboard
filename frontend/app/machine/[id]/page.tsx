@@ -32,6 +32,8 @@ export default function MachinePage() {
   const { processedMachines, todayJobs, getJobsByMonth, selectedDate, setSelectedDate } = useTasks();
   const [machine, setMachine] = useState<Machine | null>(null);
   const [monthlyJobs, setMonthlyJobs] = useState<any[]>([]);
+  const [historicViewDate, setHistoricViewDate] = useState<Date | null>(null);
+
 
   useEffect(() => {
     if (processedMachines.length === 0) return;
@@ -47,6 +49,7 @@ export default function MachinePage() {
     const month = selectedDate.getMonth() + 1;
     const jobs = await getJobsByMonth(year, month);
     setMonthlyJobs(jobs);
+    setHistoricViewDate(new Date(selectedDate)); // Lock in date for rendering
     setHistoricData(true);
   };
 
@@ -84,11 +87,11 @@ export default function MachinePage() {
   }, [monthlyJobs, machine]);
 
   const dailyData = useMemo(() => {
-    if (!machine || !historicData || !monthlyJobs.length) return [];
+    if (!machine || !historicData || !monthlyJobs.length || !historicViewDate) return [];
 
     const daysInMonth = new Date(
-      selectedDate.getFullYear(),
-      selectedDate.getMonth() + 1,
+      historicViewDate.getFullYear(),
+      historicViewDate.getMonth() + 1,
       0
     ).getDate();
 
@@ -104,8 +107,8 @@ export default function MachinePage() {
 
         // Ensure the job is from the selected month
         if (
-          jobDate.month() === selectedDate.getMonth() &&
-          jobDate.year() === selectedDate.getFullYear()
+          jobDate.month() === historicViewDate.getMonth() &&
+          jobDate.year() === historicViewDate.getFullYear()
         ) {
           const jobDay = jobDate.date() - 1; // index from 0
           if (data[jobDay]) {
@@ -117,7 +120,7 @@ export default function MachinePage() {
     }
 
     return data;
-  }, [machine, monthlyJobs, historicData, selectedDate]);
+  }, [machine, monthlyJobs, historicData, historicViewDate]);
 
 
   return (
