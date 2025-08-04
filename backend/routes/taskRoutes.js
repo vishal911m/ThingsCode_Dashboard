@@ -37,6 +37,9 @@ router.get('/jobs/by-date', getJobsByDate);
 // GET: Get only today's jobs for the user
 router.get('/jobs/today', getTodayJobs);
 
+// Get jobs my month
+router.get('/jobs/by-month', getJobsByMonth);
+
 // GET: Get job by ID
 router.get('/jobs/:id', getJobById);
 
@@ -45,9 +48,6 @@ router.put('/jobs/:id', updateJob);
 
 // DELETE: Delete job by ID
 router.delete('/jobs/:id', deleteJob);
-
-// Get jobs my month
-router.get('/jobs/by-month', getJobsByMonth);
 
 // ✅ Machine Routes
 //

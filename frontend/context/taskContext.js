@@ -119,14 +119,13 @@ export const TasksProvider = ({ children }) => {
   const getJobsByMonth = async (year , month) => {
   try {
     setLoading(true);
-
     const res = await axios.get(`${BASE_URL}/jobs/by-month?year=${year}&month=${month}`, {
       withCredentials: true,
     });
-
-    setTodayJobs(res.data); // reuse same state to avoid duplication
+    return res.data; // ✅ return job list
   } catch (err) {
     toast.error(err.response?.data?.message || 'Failed to fetch jobs for selected month');
+    return []; // Return empty list on failure
   } finally {
     setLoading(false);
   }
