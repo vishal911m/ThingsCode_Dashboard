@@ -37,6 +37,8 @@ export default function MachinePage() {
   const [monthlyJobs, setMonthlyJobs] = useState<any[]>([]);
   const [historicViewDate, setHistoricViewDate] = useState<Date | null>(null);
   const [selectedJob, setSelectedJob] = useState('');
+  const [cameFromMonth, setCameFromMonth] = useState(false);
+  const [isDailyDrilldown, setIsDailyDrilldown] = useState(false);
 
   useEffect(() => {
     if (processedMachines.length === 0) return;
@@ -61,8 +63,9 @@ export default function MachinePage() {
   }, [selectedDate, historicData]);
 
 
-  const handleToggleHistoricData = () => {
-    setHistoricData((prev) => !prev);
+  const handleViewHistoricData = () => {
+    setHistoricData(true);        // ✅ always turns ON historic view
+    setIsDailyDrilldown(false);   // optional: reset drill-down when switching months
   };
 
   const hourlyData = useMemo(() => {
@@ -134,6 +137,46 @@ export default function MachinePage() {
     return data;
   }, [machine, monthlyJobs, historicData, historicViewDate]);
 
+  const onBarClick = (data: any) => {
+    if (!historicData || !historicViewDate) return;
+    const clickedDay = data.day; // e.g. 14
+
+    const year = historicViewDate.getFullYear();
+    const month = historicViewDate.getMonth(); // 0 based
+    const newDate = new Date(year, month, clickedDay);
+
+    // Set this as the new selected date and go back to live/daily mode
+    setSelectedDate(newDate);
+    setIsDailyDrilldown(true);       // <— remember we drilled down
+  };
+
+  const historicHourlyData = useMemo(() => {
+    const data = Array.from({ length: 24 }, (_, hour) => ({
+      hour,
+      production: 0,
+      rejection: 0,
+    }));
+
+    if (!machine || !historicData || !isDailyDrilldown) return data;
+
+    for (const job of monthlyJobs) {
+      if (job.machineId === machine._id) {
+        const jobDate = moment(job.createdAt);
+        if (
+          jobDate.isSame(selectedDate, 'day')  // only for selected day
+        ) {
+          const h = jobDate.hour();
+          data[h].production += job.jobCount || 0;
+          data[h].rejection += job.rejectionCount || 0;
+        }
+      }
+    }
+    return data;
+  }, [machine, monthlyJobs, historicData, isDailyDrilldown, selectedDate]);
+
+  const chartData = historicData
+  ? (isDailyDrilldown ? historicHourlyData  : dailyData)
+  : hourlyData;
 
   return (
     <div className="p-t-1 space-y-6">
@@ -212,7 +255,7 @@ export default function MachinePage() {
                     ? 'bg-green-500 text-white hover:bg-green-600'
                     : 'bg-gray-300 text-black hover:bg-gray-400'
                 }`}
-                onClick={handleToggleHistoricData}
+                onClick={handleViewHistoricData}
               >
                 VIEW
               </button>
@@ -261,9 +304,21 @@ export default function MachinePage() {
 
           {/* Bottom - Live Data Bar Chart */}
           <div className="bg-white p-4 rounded shadow border">
-            <h3 className="text-xl font-semibold mb-2">
-              {historicData ? 'Monthly Summary (Bar Chart)' : 'Live Data (Bar Chart)'}
-            </h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xl font-semibold">
+                {historicData
+                  ? (isDailyDrilldown ? 'Hourly Data (Bar Chart)' : 'Monthly Summary (Bar Chart)')
+                  : 'Live Data (Bar Chart)'}
+              </h3>
+              {historicData && isDailyDrilldown && (
+                <button
+                  onClick={() => setIsDailyDrilldown(false)}
+                  className="inline-block bg-gray-200 hover:bg-gray-300 text-xs px-2 py-1 rounded"
+                >
+                  ← Back to Month View
+                </button>
+              )}
+            </div>
             <div className="h-64">
               {historicData && dailyData.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-gray-500">
@@ -272,15 +327,21 @@ export default function MachinePage() {
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={historicData ? dailyData : hourlyData}
+                    data={chartData}
                     margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
                   >
                     <XAxis
-                      dataKey={historicData ? 'day' : 'hour'}
+                      dataKey={
+                        historicData
+                          ? (isDailyDrilldown ? 'hour' : 'day')
+                          : 'hour'
+                      }
                       label={{
-                        value: historicData ? 'Day of Month' : 'Time (0-23)',
+                        value: historicData
+                          ? (isDailyDrilldown ? 'Hour' : 'Day of Month')
+                          : 'Hour',
                         position: 'insideBottomRight',
-                        offset: -5,
+                        offset: -5
                       }}
                     />
                     <YAxis label={{ value: 'Count', angle: -90, position: 'insideLeft' }} />
@@ -293,8 +354,8 @@ export default function MachinePage() {
                       }
                     />
                     <Legend />
-                    <Bar dataKey="production" stackId="a" fill="#3B82F6" name="Production Count" />
-                    <Bar dataKey="rejection" stackId="a" fill="#EF4444" name="Rejection Count" />
+                    <Bar dataKey="production" stackId="a" fill="#3B82F6" name="Production Count" onClick={onBarClick} />
+                    <Bar dataKey="rejection" stackId="a" fill="#EF4444" name="Rejection Count" onClick={onBarClick} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
