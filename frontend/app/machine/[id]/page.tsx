@@ -22,10 +22,15 @@ type Machine = {
   rejectionCount: number;
   liveToolName: string;
   latestStatus: string;
+  jobList: Array<{
+    jobName: string;
+    uid: string;
+    _id: string;
+  }>;
 };
 
 export default function MachinePage() {
-  const jobList = ['Job #1 - Running', 'Job #2 - Completed', 'Job #3 - Queued'];
+  // const jobList = ['Job #1 - Running', 'Job #2 - Completed', 'Job #3 - Queued'];
   const [selectedJob, setSelectedJob] = useState('Job #1');
   const [historicData, setHistoricData] = useState(false);
   const { id } = useParams(); // dynamic route param
@@ -152,11 +157,15 @@ export default function MachinePage() {
               onChange={(e) => setSelectedJob(e.target.value)}
               className="border border-gray-300 rounded px-3 py-2 text-sm shadow-sm"
             >
-              {jobList.map((job, index) => (
-                <option key={index} value={job}>
-                  {job}
-                </option>
-              ))}
+              {machine?.jobList?.length ? (
+                machine.jobList.map((job: any) => (
+                  <option key={job._id} value={job.jobName}>
+                    {job.jobName}
+                  </option>
+                ))
+              ) : (
+                <option value="">No jobs available</option>
+              )}
             </select>
           </div>
         </div>
