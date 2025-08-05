@@ -354,8 +354,8 @@ export default function MachinePage() {
                       }
                     />
                     <Legend />
-                    <Bar dataKey="production" stackId="a" fill="#3B82F6" name="Production Count" onClick={onBarClick} />
-                    <Bar dataKey="rejection" stackId="a" fill="#EF4444" name="Rejection Count" onClick={onBarClick} />
+                    <Bar dataKey="production" stackId="a" fill="#3B82F6" name="Production Count" onClick={historicData && !isDailyDrilldown ? onBarClick : undefined} />
+                    <Bar dataKey="rejection" stackId="a" fill="#EF4444" name="Rejection Count" onClick={historicData && !isDailyDrilldown ? onBarClick : undefined} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
