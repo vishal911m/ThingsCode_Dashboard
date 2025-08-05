@@ -8,6 +8,8 @@ import {
   getTodayJobs,
   getJobsByDate,
   getJobsByMonth,
+  simulateYearlyJobCounts,
+  simulateMultipleJobsPerDay,
 } from '../controllers/jobController.js';
 
 import {
@@ -39,6 +41,10 @@ router.get('/jobs/today', getTodayJobs);
 
 // Get jobs my month
 router.get('/jobs/by-month', getJobsByMonth);
+
+router.post('/simulate', simulateYearlyJobCounts);
+router.post('/simulate/multi', simulateMultipleJobsPerDay);
+
 
 // GET: Get job by ID
 router.get('/jobs/:id', getJobById);
