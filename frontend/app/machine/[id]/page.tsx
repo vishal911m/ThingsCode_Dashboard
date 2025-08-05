@@ -30,15 +30,13 @@ type Machine = {
 };
 
 export default function MachinePage() {
-  // const jobList = ['Job #1 - Running', 'Job #2 - Completed', 'Job #3 - Queued'];
-  const [selectedJob, setSelectedJob] = useState('Job #1');
   const [historicData, setHistoricData] = useState(false);
   const { id } = useParams(); // dynamic route param
   const { processedMachines, todayJobs, getJobsByMonth, selectedDate, setSelectedDate } = useTasks();
   const [machine, setMachine] = useState<Machine | null>(null);
   const [monthlyJobs, setMonthlyJobs] = useState<any[]>([]);
   const [historicViewDate, setHistoricViewDate] = useState<Date | null>(null);
-
+  const [selectedJob, setSelectedJob] = useState('');
 
   useEffect(() => {
     if (processedMachines.length === 0) return;
@@ -157,15 +155,17 @@ export default function MachinePage() {
               onChange={(e) => setSelectedJob(e.target.value)}
               className="border border-gray-300 rounded px-3 py-2 text-sm shadow-sm"
             >
-              {machine?.jobList?.length ? (
-                machine.jobList.map((job: any) => (
-                  <option key={job._id} value={job.jobName}>
-                    {job.jobName}
-                  </option>
-                ))
-              ) : (
-                <option value="">No jobs available</option>
-              )}
+              {/* Placeholder */}
+              <option value="" disabled>
+                Select Job
+              </option>
+
+              {/* Actual jobs */}
+              {machine?.jobList?.map((job) => (
+                <option key={job._id} value={job.jobName}>
+                  {job.jobName}
+                </option>
+              ))}
             </select>
           </div>
         </div>
