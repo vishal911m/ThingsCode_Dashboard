@@ -15,7 +15,7 @@ connectDB();
 const app = express();
 app.use(
   cors({
-    origin: ["http://localhost:3000"], // frontend origin
+    origin: ["http://localhost:3000", "https://things-code-dashboard.vercel.app"], // frontend origin
     credentials: true,              // allow cookies to be sent
   })
 );
