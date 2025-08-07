@@ -1,5 +1,4 @@
 'use client';
-
 import { useTasks } from '@/context/taskContext';
 import moment from 'moment';
 import { useParams } from 'next/navigation';
@@ -37,7 +36,6 @@ export default function MachinePage() {
   const [monthlyJobs, setMonthlyJobs] = useState<any[]>([]);
   const [historicViewDate, setHistoricViewDate] = useState<Date | null>(null);
   const [selectedJob, setSelectedJob] = useState('');
-  const [cameFromMonth, setCameFromMonth] = useState(false);
   const [isDailyDrilldown, setIsDailyDrilldown] = useState(false);
 
   useEffect(() => {
@@ -69,19 +67,33 @@ export default function MachinePage() {
   };
 
   const hourlyData = useMemo(() => {
+    // console.log('Recalculating hourlyData...');
+    
     const data = Array.from({ length: 24 }, (_, hour) => ({
       hour,
       production: 0,
       rejection: 0,
     }));
 
-    if (!machine || historicData) return data;
+    // console.log('Initialized data:', data);
+
+    if (!machine || historicData){
+      // console.log('Machine not loaded OR in historic mode → returning empty buckets');
+      return data;
+    } 
 
     for (const job of todayJobs) {
       if (job.machineId === machine._id) {
         const jobHour = moment(job.createdAt).hour();
+        // console.log(`Job for this machine at hour ${jobHour}`, job);
+
         data[jobHour].production += job.jobCount || 0;
         data[jobHour].rejection += job.rejectionCount || 0;
+
+      //   console.log(
+      //   `After adding jobCount=${job.jobCount}, rejectionCount=${job.rejectionCount}`,
+      //   data[jobHour]
+      // );  
       }
     }
 
@@ -307,8 +319,8 @@ export default function MachinePage() {
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xl font-semibold">
                 {historicData
-                  ? (isDailyDrilldown ? 'Hourly Data (Bar Chart)' : 'Monthly Summary (Bar Chart)')
-                  : 'Live Data (Bar Chart)'}
+                  ? (isDailyDrilldown ? 'Hourly Data (Historic)' : 'Monthly Summary (Historic)')
+                  : 'Hourly Data (Live)'}
               </h3>
               {historicData && isDailyDrilldown && (
                 <button
