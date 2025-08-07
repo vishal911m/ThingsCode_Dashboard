@@ -297,7 +297,9 @@ export const TasksProvider = ({ children }) => {
   useEffect(() => {
     if (!liveData) return;
 
-    const socket = new WebSocket('ws://localhost:8000');
+    const socket = new WebSocket(
+      process.env.NEXT_PUBLIC_SOCKET_URL || 'ws://localhost:8000'
+    );
 
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
