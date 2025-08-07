@@ -298,7 +298,9 @@ export const TasksProvider = ({ children }) => {
     if (!liveData) return;
 
     const socket = new WebSocket(
-      process.env.NEXT_PUBLIC_SOCKET_URL || 'ws://localhost:8000'
+      window.location.hostname === 'localhost'
+        ? 'ws://localhost:8000'
+        : 'wss://thingscode-dashboard.onrender.com'
     );
 
     socket.onmessage = (event) => {
