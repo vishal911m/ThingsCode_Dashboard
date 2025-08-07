@@ -359,11 +359,23 @@ export default function MachinePage() {
                     <YAxis label={{ value: 'Count', angle: -90, position: 'insideLeft' }} />
                     <Tooltip
                       formatter={(value: number, name: string) => [`${value}`, name]}
-                      labelFormatter={(label: number) =>
-                        historicData
-                          ? `Day: ${label}`
-                          : `Time: ${label === 0 ? 12 : label > 12 ? label - 12 : label} ${label < 12 ? 'AM' : 'PM'}`
-                      }
+                      labelFormatter={(label: number) => {
+                        if (historicData && isDailyDrilldown) {
+                          // Show time (12hr format)
+                          const hour = label;
+                          const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+                          const period = hour < 12 ? 'AM' : 'PM';
+                          return `Time: ${displayHour} ${period}`;
+                        } else if (historicData && !isDailyDrilldown) {
+                          return `Day: ${label}`;
+                        } else {
+                          // Live hourly
+                          const hour = label;
+                          const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+                          const period = hour < 12 ? 'AM' : 'PM';
+                          return `Time: ${displayHour} ${period}`;
+                        }
+                      }}
                     />
                     <Legend />
                     <Bar dataKey="production" stackId="a" fill="#3B82F6" name="Production Count" onClick={historicData && !isDailyDrilldown ? onBarClick : undefined} />
