@@ -336,6 +336,16 @@ export default function MachinePage() {
                   'Hourly Data (Live)'
                 )}
               </h3>
+              {/* ✅ Daily Production & Rejection Count Display */}
+              {historicData && isDailyDrilldown && (
+                <div className="text-sm font-medium text-gray-700">
+                  Production: {
+                    historicHourlyData.reduce((sum, hour) => sum + (hour.production || 0), 0)
+                  } | Rejection: {
+                    historicHourlyData.reduce((sum, hour) => sum + (hour.rejection || 0), 0)
+                  }
+                </div>
+              )}
               {historicData && isDailyDrilldown && (
                 <button
                   onClick={() => setIsDailyDrilldown(false)}
