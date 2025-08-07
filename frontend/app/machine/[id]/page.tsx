@@ -37,6 +37,12 @@ export default function MachinePage() {
   const [historicViewDate, setHistoricViewDate] = useState<Date | null>(null);
   const [selectedJob, setSelectedJob] = useState('');
   const [isDailyDrilldown, setIsDailyDrilldown] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const monthNames = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
 
   useEffect(() => {
     if (processedMachines.length === 0) return;
@@ -160,6 +166,8 @@ export default function MachinePage() {
     // Set this as the new selected date and go back to live/daily mode
     setSelectedDate(newDate);
     setIsDailyDrilldown(true);       // <— remember we drilled down
+    setSelectedDay(clickedDay); // item.day = 5
+    setSelectedMonth(month); // pass this from your month selection
   };
 
   const historicHourlyData = useMemo(() => {
@@ -318,9 +326,15 @@ export default function MachinePage() {
           <div className="bg-white p-4 rounded shadow border">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xl font-semibold">
-                {historicData
-                  ? (isDailyDrilldown ? 'Hourly Data (Historic)' : 'Monthly Summary (Historic)')
-                  : 'Hourly Data (Live)'}
+                {historicData ? (
+                  isDailyDrilldown && selectedDay !== null && selectedMonth !== null ? (
+                    `Hourly Data (${selectedDay} ${monthNames[selectedMonth]})`
+                  ) : (
+                    `Monthly Summary (${monthNames[selectedDate.getMonth()]})`
+                  )
+                ) : (
+                  'Hourly Data (Live)'
+                )}
               </h3>
               {historicData && isDailyDrilldown && (
                 <button
