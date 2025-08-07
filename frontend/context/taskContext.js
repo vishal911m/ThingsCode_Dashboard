@@ -323,11 +323,11 @@ export const TasksProvider = ({ children }) => {
   // Refetch jobs on selected date change
   // 👇 Wait for userId before calling API
   useEffect(() => {
-    if (!userId) return; // wait until user context is ready
+    if (!userId || !liveData) return; // wait until user context is ready
 
     const dateStr = moment(selectedDate).format('YYYY-MM-DD');
     getJobsByDate(dateStr);
-  }, [selectedDate, userId]);
+  }, [selectedDate, userId, liveData]);
 
   useEffect(() => {
     if (!userId) return;

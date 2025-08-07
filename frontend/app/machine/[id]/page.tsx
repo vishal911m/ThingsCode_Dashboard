@@ -39,6 +39,7 @@ export default function MachinePage() {
   const [isDailyDrilldown, setIsDailyDrilldown] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [selectedHistoricMonth, setSelectedHistoricMonth] = useState<Date>(new Date());
   const monthNames = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
@@ -56,15 +57,15 @@ export default function MachinePage() {
     const fetchData = async () => {
       if (!historicData) return;
 
-      const year = selectedDate.getFullYear();
-      const month = selectedDate.getMonth() + 1;
+      const year = selectedHistoricMonth.getFullYear();
+      const month = selectedHistoricMonth.getMonth() + 1;
       const jobs = await getJobsByMonth(year, month);
       setMonthlyJobs(jobs);
-      setHistoricViewDate(new Date(selectedDate));
+      setHistoricViewDate(new Date(selectedHistoricMonth));
     };
 
     fetchData();
-  }, [selectedDate, historicData]);
+  }, [selectedHistoricMonth, historicData]);
 
 
   const handleViewHistoricData = () => {
@@ -251,7 +252,8 @@ export default function MachinePage() {
                 onClick={() => {
                   setHistoricData(false);
                   setMonthlyJobs([]); // optional but safe
-                  setSelectedDate(new Date()); // reset month picker to current month
+                  // setSelectedDate(new Date()); // reset month picker to current month
+                  setSelectedHistoricMonth(new Date());
                 }}
               >
                 LIVE
@@ -285,10 +287,10 @@ export default function MachinePage() {
               <input
                 type="month"
                 className="border rounded px-2 py-1 text-sm"
-                value={`${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}`}
+                value={`${selectedHistoricMonth.getFullYear()}-${String(selectedHistoricMonth.getMonth() + 1).padStart(2, '0')}`}
                 onChange={(e) => {
                   const [year, month] = e.target.value.split('-').map(Number);
-                  setSelectedDate(new Date(year, month - 1));
+                  setSelectedHistoricMonth(new Date(year, month - 1));
                   // Do not reset historicData here
                 }}
               />
@@ -330,7 +332,7 @@ export default function MachinePage() {
                   isDailyDrilldown && selectedDay !== null && selectedMonth !== null ? (
                     `Hourly Data (${selectedDay} ${monthNames[selectedMonth]})`
                   ) : (
-                    `Monthly Summary (${monthNames[selectedDate.getMonth()]})`
+                    `Monthly Summary (${monthNames[selectedHistoricMonth.getMonth()]})`
                   )
                 ) : (
                   'Hourly Data (Live)'
