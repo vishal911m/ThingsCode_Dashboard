@@ -10,7 +10,8 @@ const UserContext = React.createContext();
 axios.defaults.withCredentials = true;
 
 // const serverUrl = 'https://monitr-119w.onrender.com';
-const serverUrl = "http://localhost:8000";
+// const serverUrl = "http://localhost:8000";
+const serverUrl = "https://thingscode-dashboard.onrender.com";
 
 export const UserContextProvider = ({ children }) => {
   const router = useRouter();

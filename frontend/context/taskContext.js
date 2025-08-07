@@ -9,7 +9,8 @@ import moment from 'moment';
 const TaskContext = createContext();
 
 // const BASE_URL = 'https://your-backend-url.com/api'; // 🔁 Replace with your backend URL
-const BASE_URL = "http://localhost:8000/api/v1";
+// const BASE_URL = "http://localhost:8000/api/v1";
+const BASE_URL = "https://thingscode-dashboard.onrender.com/api/v1";
 
 export const TasksProvider = ({ children }) => {
   const [jobs, setJobs] = useState([]);
