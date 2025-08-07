@@ -10,6 +10,7 @@ import {
   getJobsByMonth,
   simulateYearlyJobCounts,
   simulateMultipleJobsPerDay,
+  deleteAllJobsForUser,
 } from '../controllers/jobController.js';
 
 import {
@@ -54,6 +55,9 @@ router.put('/jobs/:id', updateJob);
 
 // DELETE: Delete job by ID
 router.delete('/jobs/:id', deleteJob);
+
+// DELETE: Delete all jobs for the current user
+router.delete('/jobs', deleteAllJobsForUser);
 
 // ✅ Machine Routes
 //

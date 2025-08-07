@@ -248,3 +248,12 @@ export const simulateMultipleJobsPerDay = async (req, res) => {
     res.status(500).json({ message: 'Simulation failed', error: error.message });
   }
 };
+
+export const deleteAllJobsForUser = asyncHandler(async (req, res) => {
+  const result = await Job.deleteMany({ user: req.user._id });
+
+  res.status(200).json({
+    message: 'All jobs deleted for current user.',
+    deletedCount: result.deletedCount,
+  });
+});
