@@ -1,4 +1,4 @@
-# ThingsCode (or your new app name here)
+# ThingsCode
 
 A full-stack ERP-lite application for real-time machine monitoring and historical data analysis. Built with:
 
@@ -12,8 +12,8 @@ A full-stack ERP-lite application for real-time machine monitoring and historica
 
 ## 🌐 Live Demo
 
-- **Frontend (Vercel)**: [https://thingscode.vercel.app](https://thingscode.vercel.app)
-- **Backend API (Render)**: [https://thingscode-api.onrender.com](https://thingscode-api.onrender.com)
+- **Frontend (Vercel)**: [https://things-code-dashboard.vercel.app/dashboard](https://things-code-dashboard.vercel.app/dashboard)
+- **Backend API (Render)**: [https://thingscode-dashboard.onrender.com](https://thingscode-dashboard.onrender.com)
 
 ---
 
