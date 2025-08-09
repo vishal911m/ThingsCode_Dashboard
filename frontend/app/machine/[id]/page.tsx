@@ -361,20 +361,22 @@ export default function MachinePage() {
                         fill="#8884d8"
                         dataKey="value"
                         nameKey="name"
-                        label={({ name, percent }: { name: string; percent?: number }) =>
-                          `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
-                        }
+                        label={false}     // ✅ no labels on the pie itself
                       >
                         {pieData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
                       <ReTooltip />
-                      <ReLegend />
+                      {/* <ReLegend /> */}
                     </PieChart>
                   </ResponsiveContainer>
                 )}
               </div>
+            </div>
+            <div className="bg-white p-4 rounded shadow border">
+              <h3 className="text-xl font-semibold mb-2">Machine Chart</h3>
+              <div className="h-40 bg-gray-100 rounded">[Chart Placeholder]</div>
             </div>
           </div>
 
