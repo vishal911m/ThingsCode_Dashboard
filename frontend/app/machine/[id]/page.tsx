@@ -56,14 +56,20 @@ export default function MachinePage() {
 
   // ✅ Pie chart data: jobName vs total production count
   const pieData = useMemo(() => {
-    if (!machine) return [];
+    if (!machine || !Array.isArray(machine.jobList)) return [];
 
     // Count production per job
     const jobCounts: Record<string, number> = {};
-    todayJobs.forEach((job: { machineId: string; jobName: string; jobCount?: number }) => {
-      if (job.machineId === machine._id) {
-        jobCounts[job.jobName] = (jobCounts[job.jobName] || 0) + (job.jobCount || 0);
+    todayJobs.forEach((job: { machineId: string; rfid?: string; jobCount?: number }) => {
+      if (String(job.machineId) === String(machine._id)) {
+      // Find jobName from machine's jobList based on RFID
+      const matchedJob = machine.jobList.find(j => j.uid === job.rfid);
+      const name = matchedJob?.jobName?.trim();
+
+      if (name) {
+        jobCounts[name] = (jobCounts[name] || 0) + (job.jobCount || 0);
       }
+    }
   });
 
   // Convert to array for recharts
@@ -343,7 +349,7 @@ export default function MachinePage() {
           {/* Top Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white p-4 rounded shadow border">
-              <h3 className="text-xl font-semibold mb-2">Production Chart</h3>
+              <h3 className="text-xl font-semibold mb-2">Production Chart: {historicData ? 'N/A' : machine?.productionCount}</h3>
               <div className="h-40">
                 {pieData.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-gray-500">
