@@ -54,6 +54,27 @@ export default function MachinePage() {
   // 🎨 Pie chart colors (you can add more if you have more jobs)
   const COLORS = ['#3B82F6', '#F97316', '#10B981', '#EF4444', '#8B5CF6', '#F59E0B'];
 
+  // ✅ Pie chart data for rejection: jobName vs total rejection count
+  const rejectionPieData = useMemo(() => {
+    if (!machine || !Array.isArray(machine.jobList)) return [];
+
+    const jobRejectionCounts: Record<string, number> = {};
+    todayJobs.forEach((job: { machineId: string; rfid?: string; rejectionCount?: number }) => {
+      if (String(job.machineId) === String(machine._id)) {
+        const matchedJob = machine.jobList.find(j => j.uid === job.rfid);
+        const name = matchedJob?.jobName?.trim();
+        if (name) {
+          jobRejectionCounts[name] = (jobRejectionCounts[name] || 0) + (job.rejectionCount || 0);
+        }
+      }
+    });
+
+    return Object.entries(jobRejectionCounts).map(([name, value]) => ({
+      name,
+      value
+    }));
+  }, [machine, todayJobs]);
+
   // ✅ Pie chart data: jobName vs total production count
   const pieData = useMemo(() => {
     if (!machine || !Array.isArray(machine.jobList)) return [];
@@ -381,8 +402,36 @@ export default function MachinePage() {
               </div>
             </div>
             <div className="bg-white p-4 rounded shadow border">
-              <h3 className="text-xl font-semibold mb-2">Machine Chart</h3>
-              <div className="h-40 bg-gray-100 rounded">[Chart Placeholder]</div>
+              <h3 className="text-xl font-semibold mb-2">Rejection Chart: {historicData ? 'N/A' : machine?.rejectionCount}</h3>
+              <div className="h-40">
+                {rejectionPieData.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    No rejection data
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={rejectionPieData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        nameKey="name"
+                        label={false}
+                      >
+                        {rejectionPieData.map((_, index) => (
+                          <Cell key={`cell-reject-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <ReTooltip />
+                      {/* <ReLegend /> */}
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             </div>
           </div>
 
