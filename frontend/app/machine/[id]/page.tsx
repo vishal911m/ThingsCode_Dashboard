@@ -12,6 +12,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip as ReTooltip,
+  Legend as ReLegend,
+} from 'recharts';
 
 type Machine = {
   _id: string;
@@ -44,6 +51,27 @@ export default function MachinePage() {
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
+  // 🎨 Pie chart colors (you can add more if you have more jobs)
+  const COLORS = ['#3B82F6', '#F97316', '#10B981', '#EF4444', '#8B5CF6', '#F59E0B'];
+
+  // ✅ Pie chart data: jobName vs total production count
+  const pieData = useMemo(() => {
+    if (!machine) return [];
+
+    // Count production per job
+    const jobCounts: Record<string, number> = {};
+    todayJobs.forEach((job: { machineId: string; jobName: string; jobCount?: number }) => {
+      if (job.machineId === machine._id) {
+        jobCounts[job.jobName] = (jobCounts[job.jobName] || 0) + (job.jobCount || 0);
+      }
+  });
+
+  // Convert to array for recharts
+  return Object.entries(jobCounts).map(([name, value]) => ({
+      name,
+      value
+    }));
+  }, [machine, todayJobs]);
 
   useEffect(() => {
     if (processedMachines.length === 0) return;
@@ -316,11 +344,37 @@ export default function MachinePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white p-4 rounded shadow border">
               <h3 className="text-xl font-semibold mb-2">Production Chart</h3>
-              <div className="h-40 bg-gray-100 rounded">[Chart Placeholder]</div>
-            </div>
-            <div className="bg-white p-4 rounded shadow border">
-              <h3 className="text-xl font-semibold mb-2">Machine Chart</h3>
-              <div className="h-40 bg-gray-100 rounded">[Chart Placeholder]</div>
+              <div className="h-40">
+                {pieData.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    No production data
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        nameKey="name"
+                        label={({ name, percent }: { name: string; percent?: number }) =>
+                          `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
+                        }
+                      >
+                        {pieData.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <ReTooltip />
+                      <ReLegend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             </div>
           </div>
 
