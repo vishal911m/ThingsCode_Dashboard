@@ -363,7 +363,7 @@ export default function MachinePage() {
                 onClick={() => {
                   setHistoricData(false);
                   setMonthlyJobs([]); // optional but safe
-                  // setSelectedDate(new Date()); // reset month picker to current month
+                  setSelectedDate(new Date()); // reset month picker to current month
                   setSelectedHistoricMonth(new Date());
                 }}
               >
