@@ -54,20 +54,54 @@ export default function MachinePage() {
   // 🎨 Pie chart colors (you can add more if you have more jobs)
   const COLORS = ['#3B82F6', '#F97316', '#10B981', '#EF4444', '#8B5CF6', '#F59E0B'];
 
+  const historicHourlyData = useMemo(() => {
+    const data = Array.from({ length: 24 }, (_, hour) => ({
+      hour,
+      production: 0,
+      rejection: 0,
+    }));
+
+    if (!machine || !historicData || !isDailyDrilldown) return data;
+
+    for (const job of monthlyJobs) {
+      if (job.machineId === machine._id) {
+        const jobDate = moment(job.createdAt);
+        if (
+          jobDate.isSame(selectedDate, 'day')  // only for selected day
+        ) {
+          const h = jobDate.hour();
+          data[h].production += job.jobCount || 0;
+          data[h].rejection += job.rejectionCount || 0;
+        }
+      }
+    }
+    return data;
+  }, [machine, monthlyJobs, historicData, isDailyDrilldown, selectedDate]);
+
   // ✅ Pie chart data for rejection: jobName vs total rejection count
   const rejectionPieData = useMemo(() => {
     if (!machine || !Array.isArray(machine.jobList)) return [];
 
     const jobRejectionCounts: Record<string, number> = {};
-    const sourceJobs = historicData ? monthlyJobs : todayJobs;
 
-    sourceJobs.forEach((job: { machineId: string; rfid?: string; rejectionCount?: number }) => {
-      if (String(job.machineId) === String(machine._id)) {
-        const matchedJob = machine.jobList.find(j => j.uid === job.rfid);
-        const name = matchedJob?.jobName?.trim();
-        if (name) {
-          jobRejectionCounts[name] = (jobRejectionCounts[name] || 0) + (job.rejectionCount || 0);
-        }
+    let sourceJobs: any[] = [];
+
+    if (isDailyDrilldown && historicData) {
+      // Filter monthlyJobs to the selected day
+      sourceJobs = monthlyJobs.filter(job =>
+        String(job.machineId) === String(machine._id) &&
+        moment(job.createdAt).isSame(selectedDate, 'day')
+      );
+    } else {
+      sourceJobs = historicData ? monthlyJobs : todayJobs;
+      sourceJobs = sourceJobs.filter(job => String(job.machineId) === String(machine._id));
+    }
+
+    sourceJobs.forEach((job: { rfid?: string; rejectionCount?: number }) => {
+      const matchedJob = machine.jobList.find(j => j.uid === job.rfid);
+      const name = matchedJob?.jobName?.trim();
+      if (name) {
+        jobRejectionCounts[name] = (jobRejectionCounts[name] || 0) + (job.rejectionCount || 0);
       }
     });
 
@@ -75,22 +109,32 @@ export default function MachinePage() {
       name,
       value
     }));
-  }, [machine, todayJobs, monthlyJobs, historicData]);
+  }, [machine, todayJobs, monthlyJobs, historicData, isDailyDrilldown, selectedDate]);
 
   // ✅ Pie chart data: jobName vs total production count
   const pieData = useMemo(() => {
     if (!machine || !Array.isArray(machine.jobList)) return [];
 
     const jobCounts: Record<string, number> = {};
-    const sourceJobs = historicData ? monthlyJobs : todayJobs;
 
-    sourceJobs.forEach((job: { machineId: string; rfid?: string; jobCount?: number }) => {
-      if (String(job.machineId) === String(machine._id)) {
-        const matchedJob = machine.jobList.find(j => j.uid === job.rfid);
-        const name = matchedJob?.jobName?.trim();
-        if (name) {
-          jobCounts[name] = (jobCounts[name] || 0) + (job.jobCount || 0);
-        }
+    let sourceJobs: any[] = [];
+
+    if (isDailyDrilldown && historicData) {
+      // Filter monthlyJobs to the selected day
+      sourceJobs = monthlyJobs.filter(job =>
+        String(job.machineId) === String(machine._id) &&
+        moment(job.createdAt).isSame(selectedDate, 'day')
+      );
+    } else {
+      sourceJobs = historicData ? monthlyJobs : todayJobs;
+      sourceJobs = sourceJobs.filter(job => String(job.machineId) === String(machine._id));
+    }
+
+    sourceJobs.forEach((job: { rfid?: string; jobCount?: number }) => {
+      const matchedJob = machine.jobList.find(j => j.uid === job.rfid);
+      const name = matchedJob?.jobName?.trim();
+      if (name) {
+        jobCounts[name] = (jobCounts[name] || 0) + (job.jobCount || 0);
       }
     });
 
@@ -98,7 +142,7 @@ export default function MachinePage() {
       name,
       value
     }));
-  }, [machine, todayJobs, monthlyJobs, historicData]);
+  }, [machine, todayJobs, monthlyJobs, historicData, isDailyDrilldown, selectedDate]);
 
   useEffect(() => {
     if (processedMachines.length === 0) return;
@@ -142,6 +186,41 @@ export default function MachinePage() {
     setHistoricData(true);
   };
 
+  const monthlyStats = useMemo(() => {
+    if (!machine || !Array.isArray(monthlyJobs)) {
+      return { production: 0, rejection: 0 };
+    }
+
+    const machineJobs = monthlyJobs.filter((job) => job.machineId === machine._id);
+
+    const production = machineJobs.reduce((sum, job) => sum + (job.jobCount || 0), 0);
+    const rejection = machineJobs.reduce((sum, job) => sum + (job.rejectionCount || 0), 0);
+
+    return { production, rejection };
+  }, [monthlyJobs, machine]);
+
+  // ✅ Total production value
+  const productionValue = useMemo(() => {
+    if (isDailyDrilldown && historicData) {
+      return historicHourlyData.reduce((sum, h) => sum + (h.production || 0), 0);
+    }
+    if (historicData) {
+      return monthlyStats.production || 0;
+    }
+    return machine?.productionCount || 0;
+  }, [isDailyDrilldown, historicData, historicHourlyData, monthlyStats.production, machine?.productionCount]);
+
+  // ✅ Total rejection value
+  const rejectionValue = useMemo(() => {
+    if (isDailyDrilldown && historicData) {
+      return historicHourlyData.reduce((sum, h) => sum + (h.rejection || 0), 0);
+    }
+    if (historicData) {
+      return monthlyStats.rejection || 0;
+    }
+    return machine?.rejectionCount || 0;
+  }, [isDailyDrilldown, historicData, historicHourlyData, monthlyStats.rejection, machine?.rejectionCount]);
+
   const hourlyData = useMemo(() => {
     // console.log('Recalculating hourlyData...');
     
@@ -175,19 +254,6 @@ export default function MachinePage() {
 
     return data;
   }, [todayJobs, machine, historicData]);
-
-  const monthlyStats = useMemo(() => {
-    if (!machine || !Array.isArray(monthlyJobs)) {
-      return { production: 0, rejection: 0 };
-    }
-
-    const machineJobs = monthlyJobs.filter((job) => job.machineId === machine._id);
-
-    const production = machineJobs.reduce((sum, job) => sum + (job.jobCount || 0), 0);
-    const rejection = machineJobs.reduce((sum, job) => sum + (job.rejectionCount || 0), 0);
-
-    return { production, rejection };
-  }, [monthlyJobs, machine]);
 
   const dailyData = useMemo(() => {
     if (!machine || !historicData || !monthlyJobs.length || !historicViewDate) return [];
@@ -239,30 +305,6 @@ export default function MachinePage() {
     setSelectedDay(clickedDay); // item.day = 5
     setSelectedMonth(month); // pass this from your month selection
   };
-
-  const historicHourlyData = useMemo(() => {
-    const data = Array.from({ length: 24 }, (_, hour) => ({
-      hour,
-      production: 0,
-      rejection: 0,
-    }));
-
-    if (!machine || !historicData || !isDailyDrilldown) return data;
-
-    for (const job of monthlyJobs) {
-      if (job.machineId === machine._id) {
-        const jobDate = moment(job.createdAt);
-        if (
-          jobDate.isSame(selectedDate, 'day')  // only for selected day
-        ) {
-          const h = jobDate.hour();
-          data[h].production += job.jobCount || 0;
-          data[h].rejection += job.rejectionCount || 0;
-        }
-      }
-    }
-    return data;
-  }, [machine, monthlyJobs, historicData, isDailyDrilldown, selectedDate]);
 
   const chartData = historicData
   ? (isDailyDrilldown ? historicHourlyData  : dailyData)
@@ -384,7 +426,7 @@ export default function MachinePage() {
           {/* Top Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white p-4 rounded shadow border">
-              <h3 className="text-xl font-semibold mb-2">Production Chart: {historicData ? monthlyStats.production : machine?.productionCount}</h3>
+              <h3 className="text-xl font-semibold mb-2">Production Chart: {productionValue}</h3>
               <div className="h-40">
                 {pieData.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-gray-500">
@@ -416,7 +458,7 @@ export default function MachinePage() {
               </div>
             </div>
             <div className="bg-white p-4 rounded shadow border">
-              <h3 className="text-xl font-semibold mb-2">Rejection Chart: {historicData ? monthlyStats.rejection : machine?.rejectionCount}</h3>
+              <h3 className="text-xl font-semibold mb-2">Rejection Chart: {rejectionValue}</h3>
               <div className="h-40">
                 {rejectionPieData.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-gray-500">
