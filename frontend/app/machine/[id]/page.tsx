@@ -57,10 +57,10 @@ export default function MachinePage() {
   // ✅ Pie chart data for rejection: jobName vs total rejection count
   const rejectionPieData = useMemo(() => {
     if (!machine || !Array.isArray(machine.jobList)) return [];
-  
+
     const jobRejectionCounts: Record<string, number> = {};
     const sourceJobs = historicData ? monthlyJobs : todayJobs;
-  
+
     sourceJobs.forEach((job: { machineId: string; rfid?: string; rejectionCount?: number }) => {
       if (String(job.machineId) === String(machine._id)) {
         const matchedJob = machine.jobList.find(j => j.uid === job.rfid);
@@ -70,7 +70,7 @@ export default function MachinePage() {
         }
       }
     });
-  
+
     return Object.entries(jobRejectionCounts).map(([name, value]) => ({
       name,
       value
@@ -109,23 +109,37 @@ export default function MachinePage() {
   }, [id, processedMachines]);
 
   useEffect(() => {
+    if (!historicData) return; // only run if in Historic mode
+  
     const fetchData = async () => {
-      if (!historicData) return;
-
       const year = selectedHistoricMonth.getFullYear();
       const month = selectedHistoricMonth.getMonth() + 1;
+    
       const jobs = await getJobsByMonth(year, month);
       setMonthlyJobs(jobs);
       setHistoricViewDate(new Date(selectedHistoricMonth));
     };
-
+  
     fetchData();
   }, [selectedHistoricMonth, historicData]);
 
 
-  const handleViewHistoricData = () => {
-    setHistoricData(true);        // ✅ always turns ON historic view
-    setIsDailyDrilldown(false);   // optional: reset drill-down when switching months
+  // 🟢 NEW handleViewHistoricData
+  const handleViewHistoricData = async () => {
+    setIsDailyDrilldown(false);
+
+    // 1. Fetch the data first
+    const year = selectedHistoricMonth.getFullYear();
+    const month = selectedHistoricMonth.getMonth() + 1;
+
+    const jobs = await getJobsByMonth(year, month);
+
+    // 2. Update monthly data and date
+    setMonthlyJobs(jobs);
+    setHistoricViewDate(new Date(selectedHistoricMonth));
+
+    // 3. Flip into Historic mode (now we already have data)
+    setHistoricData(true);
   };
 
   const hourlyData = useMemo(() => {
