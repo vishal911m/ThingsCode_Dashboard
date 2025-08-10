@@ -1,24 +1,12 @@
 'use client';
+import BarChartComponent from '@/app/Components/BarChart/BarChart';
+import MachineInfo from '@/app/Components/MachineInfo/MachineInfo';
+import MachineInfoPanel from '@/app/Components/MachineInfoPanel/MachineInfoPanel';
+import PieCharts from '@/app/Components/PieCharts/PieCharts';
 import { useTasks } from '@/context/taskContext';
 import moment from 'moment';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Bar,
-  BarChart,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip as ReTooltip,
-  Legend as ReLegend,
-} from 'recharts';
 
 type Machine = {
   _id: string;
@@ -313,271 +301,58 @@ export default function MachinePage() {
   return (
     <div className="p-t-1 space-y-6">
       {/* 🔷 Top Section - Machine Info */}
-      <div className="bg-white shadow rounded p-1 border space-y-4">
-        <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-4">
-          <h1 className="text-2xl font-bold text-left w-full md:w-1/3">
-            Machine: {machine?.machineName}
-          </h1>
-          <div className="text-center w-full md:w-1/3">
-            <span className="text-lg font-medium">Status: </span>
-            <span className={`font-semibold ${machine?.latestStatus === 'on' ? 'text-green-600' : 'text-red-500'}`}>
-              {machine?.latestStatus?.toUpperCase()}
-            </span>
-          </div>
-          <div className="w-full md:w-1/3 flex justify-end">
-            <select
-              value={selectedJob}
-              onChange={(e) => setSelectedJob(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 text-sm shadow-sm"
-            >
-              {/* Placeholder */}
-              <option value="" disabled>
-                Select Job
-              </option>
-
-              {/* Actual jobs */}
-              {machine?.jobList?.map((job) => (
-                <option key={job._id} value={job.jobName}>
-                  {job.jobName}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
+      <MachineInfo
+        machine={machine || undefined}
+        selectedJob={selectedJob}
+        setSelectedJob={setSelectedJob}
+      />
 
       {/* 🔷 Bottom Section */}
       <div className="flex flex-col lg:flex-row gap-6">
         {/* 🟩 Left Column */}
-        <div className="space-y-4 w-full lg:w-[300px] flex-shrink-0">
-          {/* Row 1 - Component Count */}
-          <div className="bg-white p-4 rounded shadow border">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xl font-semibold">Component Count</h3>
-              <button
-                className={`px-3 py-1 rounded text-sm transition-colors ${
-                  !historicData
-                    ? 'bg-green-500 text-white hover:bg-green-600'
-                    : 'bg-gray-300 text-black hover:bg-gray-400'
-                }`}
-                onClick={() => {
-                  setHistoricData(false);
-                  setMonthlyJobs([]); // optional but safe
-                  setSelectedDate(new Date()); // reset month picker to current month
-                  setSelectedHistoricMonth(new Date());
-                }}
-              >
-                LIVE
-              </button>
-            </div>
-            <h1 className="text-base">
-              Production Count: {historicData ? 'N/A' : machine?.productionCount}
-            </h1>
-            <h1 className="text-base">
-              Rejection Count: {historicData ? 'N/A' : machine?.rejectionCount}
-            </h1>
-          </div>
-
-          {/* Row 2 - Historic Data */}
-          <div className="bg-white p-4 rounded shadow border">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xl font-semibold">Historic Data</h3>
-              <button
-                className={`px-3 py-1 rounded text-sm transition-colors ${
-                  historicData
-                    ? 'bg-green-500 text-white hover:bg-green-600'
-                    : 'bg-gray-300 text-black hover:bg-gray-400'
-                }`}
-                onClick={handleViewHistoricData}
-              >
-                VIEW
-              </button>
-            </div>
-            <div className="flex items-center gap-2 mb-2">
-              <label className="text-base">Month:</label>
-              <input
-                type="month"
-                className="border rounded px-2 py-1 text-sm"
-                value={`${selectedHistoricMonth.getFullYear()}-${String(selectedHistoricMonth.getMonth() + 1).padStart(2, '0')}`}
-                onChange={(e) => {
-                  const [year, month] = e.target.value.split('-').map(Number);
-                  setSelectedHistoricMonth(new Date(year, month - 1));
-                  // Do not reset historicData here
-                }}
-              />
-            </div>
-            <h1 className="text-base">
-              Total Count: {historicData ? monthlyStats.production : 'N/A'}
-            </h1>
-            <h1 className="text-base">
-              Rejection Count: {historicData ? monthlyStats.rejection : 'N/A'}
-            </h1>
-          </div>
-
-          {/* Row 3 - Live Tool Data */}
-          <div className="bg-white p-4 rounded shadow border">
-            <h3 className="text-xl font-semibold mb-2">Live Tool Data</h3>
-            <span className="font-semibold">{machine?.liveToolName}</span>
-          </div>
-        </div>
+        <MachineInfoPanel
+          machine={machine}
+          historicData={historicData}
+          monthlyStats={monthlyStats}
+          selectedHistoricMonth={selectedHistoricMonth}
+          setSelectedHistoricMonth={setSelectedHistoricMonth}
+          handleViewHistoricData={handleViewHistoricData}
+          onLiveClick={() => {
+            setHistoricData(false);
+            setIsDailyDrilldown(false);
+            setSelectedDate(new Date());
+            setMonthlyJobs([]);
+            setSelectedHistoricMonth(new Date());
+          }}
+          selectedJob={selectedJob}
+          setSelectedJob={setSelectedJob}
+        />
 
         {/* 🟦 Right Column */}
         <div className="space-y-4 flex-grow">
           {/* Top Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded shadow border">
-              <h3 className="text-xl font-semibold mb-2">Production Chart: {productionValue}</h3>
-              <div className="h-40">
-                {pieData.length === 0 ? (
-                  <div className="flex items-center justify-center h-full text-gray-500">
-                    No production data
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        nameKey="name"
-                        label={false}     // ✅ no labels on the pie itself
-                      >
-                        {pieData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <ReTooltip />
-                      {/* <ReLegend /> */}
-                    </PieChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </div>
-            <div className="bg-white p-4 rounded shadow border">
-              <h3 className="text-xl font-semibold mb-2">Rejection Chart: {rejectionValue}</h3>
-              <div className="h-40">
-                {rejectionPieData.length === 0 ? (
-                  <div className="flex items-center justify-center h-full text-gray-500">
-                    No rejection data
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={rejectionPieData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        nameKey="name"
-                        label={false}
-                      >
-                        {rejectionPieData.map((_, index) => (
-                          <Cell key={`cell-reject-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <ReTooltip />
-                      {/* <ReLegend /> */}
-                    </PieChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </div>
-          </div>
+          <PieCharts
+            productionValue={productionValue}
+            pieData={pieData}
+            rejectionValue={rejectionValue}
+            rejectionPieData={rejectionPieData}
+            colors={COLORS}
+          />
 
           {/* Bottom - Live Data Bar Chart */}
-          <div className="bg-white p-4 rounded shadow border">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xl font-semibold">
-                {historicData ? (
-                  isDailyDrilldown && selectedDay !== null && selectedMonth !== null ? (
-                    `Hourly Data (${selectedDay} ${monthNames[selectedMonth]})`
-                  ) : (
-                    `Monthly Summary (${monthNames[selectedHistoricMonth.getMonth()]})`
-                  )
-                ) : (
-                  'Hourly Data (Live)'
-                )}
-              </h3>
-              {/* ✅ Daily Production & Rejection Count Display */}
-              {historicData && isDailyDrilldown && (
-                <div className="text-sm font-medium text-gray-700">
-                  Production: {
-                    historicHourlyData.reduce((sum, hour) => sum + (hour.production || 0), 0)
-                  } | Rejection: {
-                    historicHourlyData.reduce((sum, hour) => sum + (hour.rejection || 0), 0)
-                  }
-                </div>
-              )}
-              {historicData && isDailyDrilldown && (
-                <button
-                  onClick={() => setIsDailyDrilldown(false)}
-                  className="inline-block bg-gray-200 hover:bg-gray-300 text-xs px-2 py-1 rounded"
-                >
-                  ← Back to Month View
-                </button>
-              )}
-            </div>
-            <div className="h-64">
-              {historicData && dailyData.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-gray-500">
-                  No data available for this month.
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={chartData}
-                    margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
-                  >
-                    <XAxis
-                      dataKey={
-                        historicData
-                          ? (isDailyDrilldown ? 'hour' : 'day')
-                          : 'hour'
-                      }
-                      label={{
-                        value: historicData
-                          ? (isDailyDrilldown ? 'Hour' : 'Day of Month')
-                          : 'Hour',
-                        position: 'insideBottomRight',
-                        offset: -5
-                      }}
-                    />
-                    <YAxis label={{ value: 'Count', angle: -90, position: 'insideLeft' }} />
-                    <Tooltip
-                      formatter={(value: number, name: string) => [`${value}`, name]}
-                      labelFormatter={(label: number) => {
-                        if (historicData && isDailyDrilldown) {
-                          // Show time (12hr format)
-                          const hour = label;
-                          const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-                          const period = hour < 12 ? 'AM' : 'PM';
-                          return `Time: ${displayHour} ${period}`;
-                        } else if (historicData && !isDailyDrilldown) {
-                          return `Day: ${label}`;
-                        } else {
-                          // Live hourly
-                          const hour = label;
-                          const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-                          const period = hour < 12 ? 'AM' : 'PM';
-                          return `Time: ${displayHour} ${period}`;
-                        }
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="production" stackId="a" fill="#3B82F6" name="Production Count" onClick={historicData && !isDailyDrilldown ? onBarClick : undefined} />
-                    <Bar dataKey="rejection" stackId="a" fill="#EF4444" name="Rejection Count" onClick={historicData && !isDailyDrilldown ? onBarClick : undefined} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </div>
+          <BarChartComponent
+            historicData={historicData}
+            isDailyDrilldown={isDailyDrilldown}
+            selectedDay={selectedDay}
+            selectedMonth={selectedMonth}
+            monthNames={monthNames}
+            monthDate={selectedHistoricMonth}
+            historicHourlyData={historicHourlyData}
+            dailyData={dailyData}
+            chartData={chartData}
+            onBarClick={onBarClick}
+            setIsDailyDrilldown={setIsDailyDrilldown}
+          />
         </div>
       </div>
     </div>
