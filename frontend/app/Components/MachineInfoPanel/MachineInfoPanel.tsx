@@ -40,7 +40,7 @@ export default function MachineInfoPanel({
   setSelectedJob
 }: MachineInfoPanelProps) {
   return (
-    <div className="space-y-4 w-full lg:w-[300px] flex-shrink-0">
+    <div className="MachineInfoPanel space-y-1 w-full lg:w-[300px] flex-shrink-0">
       {/* Row 1 - Component Count */}
       <div className="bg-white p-4 rounded shadow border">
         <div className="flex items-center justify-between mb-2">

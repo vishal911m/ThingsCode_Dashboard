@@ -24,7 +24,7 @@ export default function MachineInfo({
   setSelectedJob
 }: MachineInfoProps) {
   return (
-    <div className="bg-white shadow rounded p-1 border space-y-4">
+    <div className="MachineInfo bg-white shadow rounded p-1 border space-y-4">
       <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-4">
         
         {/* Machine Name */}
