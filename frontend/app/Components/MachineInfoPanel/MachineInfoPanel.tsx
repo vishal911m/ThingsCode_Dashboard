@@ -1,44 +1,30 @@
 'use client';
-import React from 'react';
+import { useTasks } from '@/context/taskContext';
 
-type Machine = {
-  _id: string;
-  machineName: string;
-  machineType: string;
-  productionCount: number;
-  rejectionCount: number;
-  liveToolName: string;
-  latestStatus: string;
-  jobList: Array<{
-    jobName: string;
-    uid: string;
-    _id: string;
-  }>;
-};
+export default function MachineInfoPanel() {
+  const {
+    machine,
+    historicData,
+    monthlyStats,
+    selectedHistoricMonth,
+    setSelectedHistoricMonth,
+    handleViewHistoricData,
+    setHistoricData,
+    setIsDailyDrilldown,
+    setSelectedDate,
+    setMonthlyJobs,
+    setSelectedJob,
+    selectedJob
+  } = useTasks();
 
-interface MachineInfoPanelProps {
-  machine: Machine | null;
-  historicData: boolean;
-  monthlyStats: { production: number; rejection: number };
-  selectedHistoricMonth: Date;
-  setSelectedHistoricMonth: (date: Date) => void;
-  handleViewHistoricData: () => void;
-  onLiveClick: () => void;
-  selectedJob: string;
-  setSelectedJob: (jobName: string) => void;
-}
+  const onLiveClick = () => {
+    setHistoricData(false);
+    setIsDailyDrilldown(false);
+    setSelectedDate(new Date());
+    setMonthlyJobs([]);
+    setSelectedHistoricMonth(new Date());
+  };
 
-export default function MachineInfoPanel({
-  machine,
-  historicData,
-  monthlyStats,
-  selectedHistoricMonth,
-  setSelectedHistoricMonth,
-  handleViewHistoricData,
-  onLiveClick,
-  selectedJob,
-  setSelectedJob
-}: MachineInfoPanelProps) {
   return (
     <div className="MachineInfoPanel space-y-1 w-full lg:w-[300px] flex-shrink-0">
       {/* Row 1 - Component Count */}
@@ -113,10 +99,8 @@ export default function MachineInfoPanel({
           onChange={(e) => setSelectedJob(e.target.value)}
           className="border border-gray-300 rounded px-3 py-2 text-sm shadow-sm w-full"
         >
-          <option value="" disabled>
-            Select Job
-          </option>
-          {machine?.jobList?.map((job) => (
+          <option value="" disabled>Select Job</option>
+          {machine?.jobList?.map((job: any) => (
             <option key={job._id} value={job.jobName}>
               {job.jobName}
             </option>

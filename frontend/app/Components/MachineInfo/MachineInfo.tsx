@@ -1,28 +1,14 @@
 'use client';
-import React from 'react';
+import { useTasks } from '@/context/taskContext';
 
 interface Job {
   _id: string;
   jobName: string;
 }
 
-interface Machine {
-  machineName?: string;
-  latestStatus?: string;
-  jobList?: Job[];
-}
+export default function MachineInfo() {
+  const { machine, selectedJob, setSelectedJob } = useTasks();
 
-interface MachineInfoProps {
-  machine?: Machine;
-  selectedJob: string;
-  setSelectedJob: (value: string) => void;
-}
-
-export default function MachineInfo({
-  machine,
-  selectedJob,
-  setSelectedJob
-}: MachineInfoProps) {
   return (
     <div className="MachineInfo bg-white shadow rounded p-1 border space-y-4">
       <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 md:space-x-4">
@@ -53,13 +39,8 @@ export default function MachineInfo({
             onChange={(e) => setSelectedJob(e.target.value)}
             className="border border-gray-300 rounded px-3 py-2 text-sm shadow-sm"
           >
-            {/* Placeholder */}
-            <option value="" disabled>
-              Select Job
-            </option>
-
-            {/* Jobs */}
-            {machine?.jobList?.map((job) => (
+            <option value="" disabled>Select Job</option>
+            {machine?.jobList?.map((job: Job) => (
               <option key={job._id} value={job.jobName}>
                 {job.jobName}
               </option>

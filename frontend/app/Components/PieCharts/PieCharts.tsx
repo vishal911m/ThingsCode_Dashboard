@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import { useTasks } from '@/context/taskContext';
 import {
   PieChart as RePieChart,
   Pie,
@@ -8,21 +8,22 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-interface PieChartsProps {
-  productionValue: number;
-  pieData: Array<{ name: string; value: number }>;
-  rejectionValue: number;
-  rejectionPieData: Array<{ name: string; value: number }>;
-  colors: string[];
+// Define the type for each slice of the chart
+interface ChartData {
+  name: string;
+  value: number;
 }
 
-export default function PieCharts({
-  productionValue,
-  pieData,
-  rejectionValue,
-  rejectionPieData,
-  colors
-}: PieChartsProps) {
+export default function PieCharts() {
+  const {
+    productionValue,
+    pieData,
+    rejectionValue,
+    rejectionPieData
+  } = useTasks();
+
+  const COLORS = ['#3B82F6', '#F97316', '#10B981', '#EF4444', '#8B5CF6', '#F59E0B'];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Production Chart */}
@@ -42,17 +43,15 @@ export default function PieCharts({
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                   nameKey="name"
-                  label={false}
                 >
-                  {pieData.map((_, index) => (
+                  {pieData.map((_: ChartData, index: number) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={colors[index % colors.length]}
+                      fill={COLORS[index % COLORS.length]}
                     />
                   ))}
                 </Pie>
@@ -80,17 +79,15 @@ export default function PieCharts({
                   data={rejectionPieData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                   nameKey="name"
-                  label={false}
                 >
-                  {rejectionPieData.map((_, index) => (
+                  {rejectionPieData.map((_: ChartData, index: number) => (
                     <Cell
                       key={`cell-reject-${index}`}
-                      fill={colors[index % colors.length]}
+                      fill={COLORS[index % COLORS.length]}
                     />
                   ))}
                 </Pie>

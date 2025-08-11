@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import { useTasks } from '@/context/taskContext';
 import {
   BarChart as ReBarChart,
   Bar,
@@ -10,61 +10,39 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-interface CustomBarChartProps {
-  historicData: boolean;
-  isDailyDrilldown: boolean;
-  selectedDay: number | null;
-  selectedMonth: number | null;
-  monthNames: string[];
-  monthDate: Date; // equivalent to monthNames[selectedHistoricMonth.getMonth()]
-  historicHourlyData: Array<{ production?: number; rejection?: number }>;
-  dailyData: any[];
-  chartData: any[];
-  onBarClick?: (data: any, index: number) => void;
-  setIsDailyDrilldown: (value: boolean) => void;
-}
+export default function BarChartComponent() {
+  const {
+    historicData,
+    isDailyDrilldown,
+    selectedDay,
+    selectedMonth,
+    selectedHistoricMonth,
+    historicHourlyData,
+    dailyData,
+    chartData,
+    onBarClick,
+    setIsDailyDrilldown
+  } = useTasks();
 
-export default function BarChartComponent({
-  historicData,
-  isDailyDrilldown,
-  selectedDay,
-  selectedMonth,
-  monthNames,
-  monthDate,
-  historicHourlyData,
-  dailyData,
-  chartData,
-  onBarClick,
-  setIsDailyDrilldown
-}: CustomBarChartProps) {
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
   return (
     <div className="bg-white p-4 rounded shadow border">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-xl font-semibold">
           {historicData ? (
-            isDailyDrilldown && selectedDay !== null && selectedMonth !== null ? (
-              `Hourly Data (${selectedDay} ${monthNames[selectedMonth]})`
-            ) : (
-              `Monthly Summary (${monthNames[monthDate.getMonth()]})`
-            )
+            isDailyDrilldown && selectedDay !== null && selectedMonth !== null
+              ? `Hourly Data (${selectedDay} ${monthNames[selectedMonth]})`
+              : `Monthly Summary (${monthNames[selectedHistoricMonth.getMonth()]})`
           ) : (
             'Hourly Data (Live)'
           )}
         </h3>
 
-        {/* ✅ Daily Production & Rejection Count Display */}
         {historicData && isDailyDrilldown && (
           <div className="text-sm font-medium text-gray-700">
-            Production:{' '}
-            {historicHourlyData.reduce(
-              (sum, hour) => sum + (hour.production || 0),
-              0
-            )}{' '}
-            | Rejection:{' '}
-            {historicHourlyData.reduce(
-              (sum, hour) => sum + (hour.rejection || 0),
-              0
-            )}
+            Production: {historicHourlyData.reduce((sum: number, hour: { production?: number; rejection?: number }) => sum + (hour.production || 0), 0)} | 
+            Rejection: {historicHourlyData.reduce((sum: number, hour: { production?: number; rejection?: number }) => sum + (hour.rejection || 0), 0)}
           </div>
         )}
 
@@ -85,23 +63,12 @@ export default function BarChartComponent({
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <ReBarChart
-              data={chartData}
-              margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
-            >
+            <ReBarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
               <XAxis
-                dataKey={
-                  historicData
-                    ? isDailyDrilldown
-                      ? 'hour'
-                      : 'day'
-                    : 'hour'
-                }
+                dataKey={historicData ? (isDailyDrilldown ? 'hour' : 'day') : 'hour'}
                 label={{
                   value: historicData
-                    ? isDailyDrilldown
-                      ? 'Hour'
-                      : 'Day of Month'
+                    ? (isDailyDrilldown ? 'Hour' : 'Day of Month')
                     : 'Hour',
                   position: 'insideBottomRight',
                   offset: -5
@@ -119,16 +86,14 @@ export default function BarChartComponent({
                 labelFormatter={(label: number) => {
                   if (historicData && isDailyDrilldown) {
                     const hour = label;
-                    const displayHour =
-                      hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+                    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
                     const period = hour < 12 ? 'AM' : 'PM';
                     return `Time: ${displayHour} ${period}`;
                   } else if (historicData && !isDailyDrilldown) {
                     return `Day: ${label}`;
                   } else {
                     const hour = label;
-                    const displayHour =
-                      hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+                    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
                     const period = hour < 12 ? 'AM' : 'PM';
                     return `Time: ${displayHour} ${period}`;
                   }
@@ -140,18 +105,14 @@ export default function BarChartComponent({
                 stackId="a"
                 fill="#3B82F6"
                 name="Production Count"
-                onClick={
-                  historicData && !isDailyDrilldown ? onBarClick : undefined
-                }
+                onClick={historicData && !isDailyDrilldown ? onBarClick : undefined}
               />
               <Bar
                 dataKey="rejection"
                 stackId="a"
                 fill="#EF4444"
                 name="Rejection Count"
-                onClick={
-                  historicData && !isDailyDrilldown ? onBarClick : undefined
-                }
+                onClick={historicData && !isDailyDrilldown ? onBarClick : undefined}
               />
             </ReBarChart>
           </ResponsiveContainer>
