@@ -34,7 +34,7 @@ export default function PieCharts() {
         <div className="h-40">
           {pieData.length === 0 ? (
             <div className="flex items-center justify-center h-full text-gray-500">
-              No production data
+              N/A
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -70,7 +70,7 @@ export default function PieCharts() {
         <div className="h-40">
           {rejectionPieData.length === 0 ? (
             <div className="flex items-center justify-center h-full text-gray-500">
-              No rejection data
+              N/A
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">

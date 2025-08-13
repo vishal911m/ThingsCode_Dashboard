@@ -3,18 +3,12 @@ import { useTasks } from '@/context/taskContext';
 
 export default function MachineInfoPanel() {
   const {
-    machine,
-    historicData,
-    monthlyStats,
-    selectedHistoricMonth,
-    setSelectedHistoricMonth,
-    handleViewHistoricData,
-    setHistoricData,
-    setIsDailyDrilldown,
-    setSelectedDate,
-    setMonthlyJobs,
-    setSelectedJob,
-    selectedJob
+    machine, historicData,
+    monthlyStats, selectedHistoricMonth,
+    setSelectedHistoricMonth, handleViewHistoricData,
+    setHistoricData, setIsDailyDrilldown,
+    setSelectedDate, setMonthlyJobs,
+    setSelectedJob, selectedJob
   } = useTasks();
 
   const onLiveClick = () => {

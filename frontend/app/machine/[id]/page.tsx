@@ -6,7 +6,7 @@ import BarChartComponent from '@/app/Components/BarChart/BarChart';
 
 export default function MachinePage() {
   return (
-    <div className="p-t-1 space-y-1">
+    <div className="MachinePage p-t-1 space-y-1">
       {/* 🔷 Top Section - Machine Info */}
       <MachineInfo />
 

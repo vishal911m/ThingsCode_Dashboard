@@ -364,19 +364,19 @@ export const TasksProvider = ({ children }) => {
   };
 
   const getJobsByMonth = async (year , month) => {
-  try {
-    setLoading(true);
-    const res = await axios.get(`${BASE_URL}/jobs/by-month?year=${year}&month=${month}`, {
-      withCredentials: true,
-    });
-    return res.data; // ✅ return job list
-  } catch (err) {
-    toast.error(err.response?.data?.message || 'Failed to fetch jobs for selected month');
-    return []; // Return empty list on failure
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      const res = await axios.get(`${BASE_URL}/jobs/by-month?year=${year}&month=${month}`, {
+        withCredentials: true,
+      });
+      return res.data; // ✅ return job list
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to fetch jobs for selected month');
+      return []; // Return empty list on failure
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const getJobsByDate = async (date) => {
@@ -610,34 +610,20 @@ export const TasksProvider = ({ children }) => {
   return (
     <TaskContext.Provider
       value={{
-        jobs,
-        todayJobs,
-        machines,
-        loading,
-        isEditing,
-        modalMode,
-        activeMachine,
-        machineToDelete,
-        showDeleteModal,
-        selectedDate,        
-        processedMachines,
-        liveData,           
-        createJob,
-        setSelectedDate,     
-        getJobs,
-        getJobById,
-        updateJob,
-        deleteMachine,
-        createMachine,
-        getMachines,
-        getTodayJobs,
-        getJobsByDate,
-        handleInput,
-        openModalForAddMachine,
-        openModalForEditMachine,
-        openModalForDeleteMachine,
-        closeModal,
-        getJobsByMonth,
+        jobs, todayJobs,
+        machines, loading,
+        isEditing, modalMode,
+        activeMachine, machineToDelete,
+        showDeleteModal, selectedDate,        
+        processedMachines, liveData,           
+        createJob, setSelectedDate,     
+        getJobs, getJobById,
+        updateJob, deleteMachine,
+        createMachine, getMachines,
+        getTodayJobs, getJobsByDate,
+        handleInput, openModalForAddMachine,
+        openModalForEditMachine, openModalForDeleteMachine,
+        closeModal, getJobsByMonth,
         processedMachines, 
         todayJobs, setTodayJobs,
         selectedDate, setSelectedDate,
@@ -650,18 +636,12 @@ export const TasksProvider = ({ children }) => {
         selectedDay, setSelectedDay,
         selectedMonth, setSelectedMonth,
         selectedHistoricMonth, setSelectedHistoricMonth,
-        historicHourlyData,
-        rejectionPieData,
-        pieData,
-        monthlyStats,
-        productionValue,
-        rejectionValue,
-        hourlyData,
-        dailyData,
-        chartData,
-        handleViewHistoricData,
-        onBarClick,
-        getJobsByMonth
+        historicHourlyData, rejectionPieData,
+        pieData, monthlyStats,
+        productionValue, rejectionValue,
+        hourlyData, dailyData,
+        chartData, handleViewHistoricData,
+        onBarClick, getJobsByMonth
       }}
     >
       {children}
