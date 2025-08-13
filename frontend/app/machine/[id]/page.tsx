@@ -3,8 +3,11 @@ import MachineInfo from '@/app/Components/MachineInfo/MachineInfo';
 import MachineInfoPanel from '@/app/Components/MachineInfoPanel/MachineInfoPanel';
 import PieCharts from '@/app/Components/PieCharts/PieCharts';
 import BarChartComponent from '@/app/Components/BarChart/BarChart';
+import useRedirect from '@/hooks/useUserRedirect';
 
 export default function MachinePage() {
+  useRedirect("/login");
+
   return (
     <div className="MachinePage p-t-1 space-y-1">
       {/* 🔷 Top Section - Machine Info */}
