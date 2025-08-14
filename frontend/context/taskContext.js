@@ -545,7 +545,8 @@ export const TasksProvider = ({ children }) => {
 
     const socket = new WebSocket(
       window.location.hostname === 'localhost'
-        ? 'ws://localhost:8000'
+        // ? 'ws://localhost:8000'
+        ? 'wss://thingscode-dashboard.onrender.com'
         : 'wss://thingscode-dashboard.onrender.com'
     );
 
