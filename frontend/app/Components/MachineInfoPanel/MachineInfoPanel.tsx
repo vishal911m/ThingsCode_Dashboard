@@ -1,5 +1,6 @@
 'use client';
 import { useTasks } from '@/context/taskContext';
+import { useEffect } from 'react';
 
 export default function MachineInfoPanel() {
   const {
@@ -9,7 +10,7 @@ export default function MachineInfoPanel() {
     setHistoricData, setIsDailyDrilldown,
     setSelectedDate, setMonthlyJobs,
     setSelectedJob, selectedJob
-  } = useTasks();
+  } = useTasks();    
 
   const onLiveClick = () => {
     setHistoricData(false);
@@ -18,6 +19,18 @@ export default function MachineInfoPanel() {
     setMonthlyJobs([]);
     setSelectedHistoricMonth(new Date());
   };
+
+  useEffect(() => {
+    // ✅ Always reset historicData when the page loads
+    setHistoricData(false);
+    setSelectedHistoricMonth(new Date());
+
+    return () => {
+      // ✅ Ensure cleanup when leaving the page
+      setHistoricData(false);
+      setSelectedHistoricMonth(new Date());
+    };
+  }, []);
 
   return (
     <div className="MachineInfoPanel space-y-1 w-full lg:w-[300px] flex-shrink-0">
