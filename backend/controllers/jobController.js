@@ -234,7 +234,7 @@ export const simulateMultipleJobsPerDay = async (req, res) => {
 
           for (let i = 0; i < numberOfJobs; i++) {
             const jobCount = Math.floor(Math.random() * 1) + 1;
-            const rejectionCount = Math.floor(Math.random() * 10);
+            const rejectionCount = Math.floor(Math.random() * 1);
 
             jobsToInsert.push({
               title: '',
