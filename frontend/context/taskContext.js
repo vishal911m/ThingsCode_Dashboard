@@ -603,6 +603,11 @@ export const TasksProvider = ({ children }) => {
       const jobs = await getJobsByMonth(year, month);
       setMonthlyJobs(jobs);
       setHistoricViewDate(new Date(selectedHistoricMonth));
+
+      // 🚀 Reset drilldown if user changes month
+      setIsDailyDrilldown(false);
+      setSelectedDay(null);
+      setSelectedDate(new Date(selectedHistoricMonth))
     };
   
     fetchData();
