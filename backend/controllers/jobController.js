@@ -192,8 +192,7 @@ export const simulateYearlyJobCounts = async (req, res) => {
 };
 
 /**
- * Simulate multiple jobs per day for every machine from Jan 1st to today,
- * skipping Sundays and limiting to max 20 jobs per hour (across all machines).
+ * Simulate multiple jobs per day for every machine from Jan 1st to today.
  * Route: POST /simulate/multi
  */
 export const simulateMultipleJobsPerDay = async (req, res) => {
@@ -214,43 +213,29 @@ export const simulateMultipleJobsPerDay = async (req, res) => {
       date.isSameOrBefore(endDate);
       date.add(1, 'day')
     ) {
-      // ⛔ Skip Sundays
+      // ⛔ Skip Sundays (day() === 0)
       if (date.day() === 0) continue;
+      
+      for (const machine of machines) {
+        // Randomly pick how many jobs to simulate that day (2–5)
+        const numberOfJobs = Math.floor(Math.random() * 4) + 2;
 
-      for (let hour = 0; hour < 24; hour++) {
-        const currentHour = moment(date).hour(hour).minute(0).second(0);
+        for (let i = 0; i < numberOfJobs; i++) {
+          const jobCount = Math.floor(Math.random() * 50) + 1;
+          const rejectionCount = Math.floor(Math.random() * 10);
 
-        // Random total jobs for this hour (max 20, across all machines)
-        let jobsRemaining = Math.floor(Math.random() * 20) + 1;
-
-        for (const machine of machines) {
-          if (jobsRemaining <= 0) break;
-
-          // Assign up to 5 jobs per machine until the hourly cap is hit
-          const numberOfJobs = Math.min(
-            jobsRemaining,
-            Math.floor(Math.random() * 4) + 2
-          );
-
-          for (let i = 0; i < numberOfJobs; i++) {
-            const jobCount = Math.floor(Math.random() * 1) + 1;
-            const rejectionCount = Math.floor(Math.random() * 1);
-
-            jobsToInsert.push({
-              title: '',
-              description: '',
-              status: 'on',
-              user: req.user._id,
-              machineId: machine._id,
-              rfid: machine.jobList?.[i % machine.jobList.length]?.uid ?? 'SIMULATED',
-              jobCount,
-              rejectionCount,
-              createdAt: currentHour.toDate(),
-              updatedAt: currentHour.toDate(),
-            });
-          }
-
-          jobsRemaining -= numberOfJobs;
+          jobsToInsert.push({
+            title: '',
+            description: '',
+            status: 'on',
+            user: req.user._id,
+            machineId: machine._id,
+            rfid: machine.jobList?.[i % machine.jobList.length]?.uid ?? 'SIMULATED',
+            jobCount,
+            rejectionCount,
+            createdAt: date.toDate(),
+            updatedAt: date.toDate(),
+          });
         }
       }
     }
