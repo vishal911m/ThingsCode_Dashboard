@@ -213,6 +213,9 @@ export const simulateMultipleJobsPerDay = async (req, res) => {
       date.isSameOrBefore(endDate);
       date.add(1, 'day')
     ) {
+      // ⛔ Skip Sundays (day() === 0)
+      if (date.day() === 0) continue;
+      
       for (const machine of machines) {
         // Randomly pick how many jobs to simulate that day (2–5)
         const numberOfJobs = Math.floor(Math.random() * 4) + 2;
