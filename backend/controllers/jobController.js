@@ -192,7 +192,8 @@ export const simulateYearlyJobCounts = async (req, res) => {
 };
 
 /**
- * Simulate multiple jobs per day for every machine from Jan 1st to today.
+ * Simulate multiple jobs per day for every machine from Jan 1st to today,
+ * skipping Sundays and spreading jobs across all 24 hours.
  * Route: POST /simulate/multi
  */
 export const simulateMultipleJobsPerDay = async (req, res) => {
@@ -215,27 +216,31 @@ export const simulateMultipleJobsPerDay = async (req, res) => {
     ) {
       // ⛔ Skip Sundays (day() === 0)
       if (date.day() === 0) continue;
-      
-      for (const machine of machines) {
-        // Randomly pick how many jobs to simulate that day (2–5)
-        const numberOfJobs = Math.floor(Math.random() * 4) + 2;
 
-        for (let i = 0; i < numberOfJobs; i++) {
-          const jobCount = Math.floor(Math.random() * 50) + 1;
-          const rejectionCount = Math.floor(Math.random() * 10);
+      for (let hour = 0; hour < 24; hour++) {
+        const currentHour = moment(date).hour(hour).minute(0).second(0);
 
-          jobsToInsert.push({
-            title: '',
-            description: '',
-            status: 'on',
-            user: req.user._id,
-            machineId: machine._id,
-            rfid: machine.jobList?.[i % machine.jobList.length]?.uid ?? 'SIMULATED',
-            jobCount,
-            rejectionCount,
-            createdAt: date.toDate(),
-            updatedAt: date.toDate(),
-          });
+        for (const machine of machines) {
+          // Randomly pick how many jobs to simulate that hour (2–5)
+          const numberOfJobs = Math.floor(Math.random() * 4) + 2;
+
+          for (let i = 0; i < numberOfJobs; i++) {
+            const jobCount = Math.floor(Math.random() * 50) + 1;
+            const rejectionCount = Math.floor(Math.random() * 10);
+
+            jobsToInsert.push({
+              title: '',
+              description: '',
+              status: 'on',
+              user: req.user._id,
+              machineId: machine._id,
+              rfid: machine.jobList?.[i % machine.jobList.length]?.uid ?? 'SIMULATED',
+              jobCount,
+              rejectionCount,
+              createdAt: currentHour.toDate(),
+              updatedAt: currentHour.toDate(),
+            });
+          }
         }
       }
     }
