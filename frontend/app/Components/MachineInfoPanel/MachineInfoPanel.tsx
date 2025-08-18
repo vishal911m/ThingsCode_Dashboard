@@ -24,11 +24,13 @@ export default function MachineInfoPanel() {
     // ✅ Always reset historicData when the page loads
     setHistoricData(false);
     setSelectedHistoricMonth(new Date());
+    setSelectedDate(new Date());
 
     return () => {
       // ✅ Ensure cleanup when leaving the page
       setHistoricData(false);
       setSelectedHistoricMonth(new Date());
+      setSelectedDate(new Date());
     };
   }, []);
 
