@@ -490,20 +490,24 @@ export const TasksProvider = ({ children }) => {
 
   const processedMachines = useMemo(() => {
     return machines.map((machine) => {
+      // 1. Filter today's jobs for this specific machine
       const matchingJobs = todayJobs.filter(
         (job) => job.machineId === machine._id
       );
 
+      // 2. Calculate total production count for this machine
       const productionCount = matchingJobs.reduce(
         (sum, job) => sum + (job.jobCount || 0),
         0
       );
 
+      // 3. Calculate total rejection count for this machine
       const rejectionCount = matchingJobs.reduce(
         (sum, job) => sum + (job.rejectionCount || 0),
         0
       );
 
+      // 4. Find the **latest job** (based on createdAt date)
       const latestJob = matchingJobs.reduce(
         (latest, current) =>
           !latest || new Date(current.createdAt) > new Date(latest.createdAt)
@@ -512,9 +516,11 @@ export const TasksProvider = ({ children }) => {
         null
       );
 
+      // 5. Extract latest RFID + machine status
       const latestRFID = latestJob?.rfid;
       const latestStatus = latestJob?.status ?? 'off';
 
+      // 6. Find the tool name corresponding to that RFID
       let liveToolName = 'N/A';
       if (latestRFID && Array.isArray(machine.jobList)) {
         const matchedJob = machine.jobList.find(job => job.uid === latestRFID);
@@ -523,6 +529,7 @@ export const TasksProvider = ({ children }) => {
         }
       }
 
+      // 7. Return enriched machine data with computed fields
       return {
         ...machine,
         productionCount,
