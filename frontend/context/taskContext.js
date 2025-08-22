@@ -489,23 +489,28 @@ export const TasksProvider = ({ children }) => {
   };
 
   const processedMachines = useMemo(() => {
-    return machines.map((machine) => {
+    // console.log("🛠 Running processedMachines...");
+    return machines.map((machine, index) => {
+      // console.log(`\n🔹 Processing Machine #${index + 1}:`, machine._id, machine.machineName);
       // 1. Filter today's jobs for this specific machine
       const matchingJobs = todayJobs.filter(
         (job) => job.machineId === machine._id
       );
+      // console.log("   ➡️ Matching Jobs:", matchingJobs);
 
       // 2. Calculate total production count for this machine
       const productionCount = matchingJobs.reduce(
         (sum, job) => sum + (job.jobCount || 0),
         0
       );
+      // console.log("   📦 Production Count:", productionCount);
 
       // 3. Calculate total rejection count for this machine
       const rejectionCount = matchingJobs.reduce(
         (sum, job) => sum + (job.rejectionCount || 0),
         0
       );
+      // console.log("   ❌ Rejection Count:", rejectionCount);
 
       // 4. Find the **latest job** (based on createdAt date)
       const latestJob = matchingJobs.reduce(
@@ -515,10 +520,13 @@ export const TasksProvider = ({ children }) => {
             : latest,
         null
       );
+      // console.log("   🕒 Latest Job:", latestJob);
 
       // 5. Extract latest RFID + machine status
       const latestRFID = latestJob?.rfid;
       const latestStatus = latestJob?.status ?? 'off';
+      // console.log("   🏷 Latest RFID:", latestRFID);
+      // console.log("   🔌 Latest Status:", latestStatus);
 
       // 6. Find the tool name corresponding to that RFID
       let liveToolName = 'N/A';
@@ -528,16 +536,20 @@ export const TasksProvider = ({ children }) => {
           liveToolName = matchedJob.jobName || 'Unnamed Tool';
         }
       }
+      // console.log("   🛠 Live Tool Name:", liveToolName);
 
       // 7. Return enriched machine data with computed fields
-      return {
+      const processed = {
         ...machine,
         productionCount,
         rejectionCount,
         liveToolName,
         latestStatus,
       };
-    });
+
+      // console.log("✅ Processed Machine:", processed);
+      return processed;
+      });
   }, [machines, todayJobs]);
 
   // Update liveData based on selectedDate
