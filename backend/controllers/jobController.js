@@ -21,9 +21,22 @@ export const createJob = asyncHandler(async (req, res) => {
 
   broadcastNewJob(job); // <-- broadcast to WebSocket clients
   await job.save();
-  res.status(201).json(job);
+  const jobObj = job.toObject();
+
+  // Convert UTC -> IST manually
+  jobObj.createdAt = toIST(job.createdAt);
+  jobObj.updatedAt = toIST(job.updatedAt);
+
+  res.status(201).json(jobObj);
 });
 
+function toIST(date) {
+  const IST_OFFSET = 5.5 * 60 * 60 * 1000; // 5h30m in ms
+  return new Date(date.getTime() + IST_OFFSET)
+    .toISOString()
+    .replace("T", " ")
+    .substring(0, 19); // yyyy-MM-dd HH:mm:ss
+}
 
 export const getJobs = asyncHandler(async (req, res) => {
   const jobs = await Job.find({ user: req.user._id });
