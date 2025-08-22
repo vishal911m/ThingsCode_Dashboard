@@ -50,18 +50,22 @@ export const getJobsByDate = asyncHandler(async (req, res) => {
 
   if (!date) {
     res.status(400);
-    throw new Error('Date is required');
+    throw new Error("Date is required");
   }
 
-  // Parse date as local (not UTC)
-  const parsedDate = parseISO(date); // This creates local time like "2025-07-29T00:00:00.000+05:30"
+  // Parse the date string
+  const parsedDate = parseISO(date);
 
-  const start = startOfDay(parsedDate); // 00:00 IST
-  const end = endOfDay(parsedDate);     // 23:59:59 IST
+  // Get IST offset (+5:30 = 330 mins)
+  const IST_OFFSET = 5.5 * 60 * 60 * 1000;
+
+  // Calculate IST day start/end in UTC
+  const start = new Date(startOfDay(parsedDate).getTime() - IST_OFFSET);
+  const end = new Date(endOfDay(parsedDate).getTime() - IST_OFFSET);
 
   const jobs = await Job.find({
     user: req.user._id,
-    createdAt: { $gte: start, $lte: end }
+    createdAt: { $gte: start, $lte: end },
   });
 
   res.status(200).json(jobs);
