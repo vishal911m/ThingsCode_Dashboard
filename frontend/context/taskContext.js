@@ -146,8 +146,31 @@ export const TasksProvider = ({ children }) => {
 
     return { production, rejection };
   }, [monthlyJobs, machine]);
+  
+  // const monthlyStats = useMemo(() => {
+  //   console.log("▶️ Running monthlyStats calculation...");
 
-  // ✅ Total production value
+  //   if (!machine || !Array.isArray(monthlyJobs)) {
+  //     console.log("⚠️ Missing machine OR monthlyJobs invalid");
+  //     return { production: 0, rejection: 0 };
+  //   }
+
+  //   console.log("✅ Machine:", machine._id);
+  //   console.log("📦 Total jobs received:", monthlyJobs.length);
+
+  //   const machineJobs = monthlyJobs.filter((job) => job.machineId === machine._id);
+
+  //   console.log("✅ Jobs after filter:", machineJobs.length);
+
+  //   const production = machineJobs.reduce((sum, job) => sum + (job.jobCount || 0), 0);
+  //   const rejection = machineJobs.reduce((sum, job) => sum + (job.rejectionCount || 0), 0);
+
+  //   console.log("📊 Final Production:", production);
+  //   console.log("📊 Final Rejection:", rejection);
+
+  //   return { production, rejection };
+  // }, [monthlyJobs, machine])
+
   const productionValue = useMemo(() => {
     if (isDailyDrilldown && historicData) {
       return historicHourlyData.reduce((sum, h) => sum + (h.production || 0), 0);
