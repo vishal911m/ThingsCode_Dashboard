@@ -378,7 +378,15 @@ export const TasksProvider = ({ children }) => {
     const res = await axios.get(`${BASE_URL}/jobs/today`, {
       withCredentials: true,
     });
-    setTodayJobs(res.data); // replace current jobs state with today's jobs
+    const data = res.data;
+    setTodayJobs(data);
+
+    // Check if all machines have zero job counts
+    const totalProduction = data.reduce((sum, job) => sum + (job.jobCount || 0), 0);
+    if (totalProduction === 0) {
+      console.log('🟡 No jobs found for today — simulating...');
+      await simulateJobsForDate(new Date());
+    }
   } catch (err) {
     toast.error(err.response?.data?.message || 'Failed to fetch today\'s jobs');
   } finally {
@@ -412,7 +420,15 @@ export const TasksProvider = ({ children }) => {
         withCredentials: true,
       });
 
-      setTodayJobs(res.data); // Or setDateFilteredJobs if you want a separate state
+      const data = res.data;
+      setTodayJobs(data); // Or setDateFilteredJobs if you want a separate state
+
+      // Check if all job counts are zero
+      const totalProduction = data.reduce((sum, job) => sum + (job.jobCount || 0), 0);
+      if (totalProduction === 0) {
+        console.log(`🟡 No jobs found for ${localDateString} — simulating...`);
+        await simulateJobsForDate(date);
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to fetch jobs for selected date');
     } finally {
@@ -467,6 +483,21 @@ export const TasksProvider = ({ children }) => {
       setLoading(false);
     }
   };
+
+  const simulateJobsForDate = async (date) => {
+  try {
+    const formattedDate = formatDateLocal(new Date(date));
+    const res = await axios.post(
+      `${BASE_URL}/simulate/today`,
+      { date: formattedDate },
+      { withCredentials: true }
+    );
+    toast.success(`Simulated jobs for ${formattedDate}`);
+    await getJobsByDate(date); // reload jobs after simulation
+  } catch (err) {
+    toast.error(err.response?.data?.message || 'Failed to simulate jobs');
+  }
+};
 
   // --- MACHINE FUNCTIONS ---
 

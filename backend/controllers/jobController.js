@@ -270,40 +270,61 @@ export const simulateMultipleJobsPerDay = async (req, res) => {
 };
 
 /**
- * Simulate multiple jobs for each machine for the current day (today only).
+ * Simulate multiple jobs for each machine for a specific date (default: today)
  * Route: POST /simulate/today
+ * Optional body: { date: "YYYY-MM-DD" }
  */
 export const simulateTodayJobs = async (req, res) => {
   try {
-    // const today = moment().startOf('day'); // start of today
-    const now = moment(); // current local time (IST)
-    const machines = await MachineDetails.find({ user: req.user._id });
-
-    if (!machines?.length) {
-      return res.status(400).json({ message: 'No machines found for user.' });
+    // ✅ Determine simulation date
+    const dateParam = req.body.date;
+    const simulationDate = dateParam ? moment(dateParam, "YYYY-MM-DD") : moment();
+    if (!simulationDate.isValid()) {
+      return res.status(400).json({ message: "Invalid date format. Use YYYY-MM-DD." });
     }
+
+    // Start + end of simulation day (for cleanup or duplicates)
+    const startOfDay = simulationDate.clone().startOf("day");
+    const endOfDay = simulationDate.clone().endOf("day");
+
+    // Fetch all user's machines
+    const machines = await MachineDetails.find({ user: req.user._id });
+    if (!machines?.length) {
+      return res.status(400).json({ message: "No machines found for user." });
+    }
+
+    // 🧹 (Optional) Remove existing jobs for that date to avoid duplicates
+    await Job.deleteMany({
+      user: req.user._id,
+      createdAt: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() },
+    });
 
     const jobsToInsert = [];
 
     for (const machine of machines) {
-      // Randomly pick how many jobs to simulate for today (e.g., 2–5)
-      const numberOfJobs = Math.floor(Math.random() * 4) + 2;
+      const numberOfJobs = Math.floor(Math.random() * 4) + 2; // 2–5 jobs per machine
 
       for (let i = 0; i < numberOfJobs; i++) {
         const jobCount = Math.floor(Math.random() * 50) + 1;
         const rejectionCount = Math.floor(Math.random() * 10);
 
+        // ⏰ Stagger job times throughout the day (more realistic)
+        const randomMinutes = Math.floor(Math.random() * 24 * 60);
+        const jobTime = startOfDay.clone().add(randomMinutes, "minutes");
+
         jobsToInsert.push({
           title: `Simulated Job ${i + 1}`,
-          description: `Auto-generated job for ${moment().format('YYYY-MM-DD')}`,
-          status: 'on',
+          description: `Auto-generated job for ${simulationDate.format("YYYY-MM-DD")}`,
+          status: "on",
           user: req.user._id,
           machineId: machine._id,
-          rfid: machine.jobList?.[i % (machine.jobList.length || 1)]?.uid ?? 'SIMULATED',
+          rfid:
+            machine.jobList?.[i % (machine.jobList.length || 1)]?.uid ??
+            "SIMULATED",
           jobCount,
           rejectionCount,
-          createdAt: now.toDate(), // ensures today’s date
-          updatedAt: now.toDate(),
+          createdAt: jobTime.toDate(), // 🕒 simulated time within the day
+          updatedAt: jobTime.toDate(),
         });
       }
     }
@@ -311,15 +332,19 @@ export const simulateTodayJobs = async (req, res) => {
     await Job.insertMany(jobsToInsert);
 
     res.status(201).json({
-      message: `Today's simulation complete (${moment().format('YYYY-MM-DD')})`,
+      message: `Simulated ${jobsToInsert.length} jobs for ${simulationDate.format(
+        "YYYY-MM-DD"
+      )}`,
       jobsInserted: jobsToInsert.length,
+      simulatedDate: simulationDate.format("YYYY-MM-DD"),
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Simulation failed', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Simulation failed", error: error.message });
   }
 };
-
 
 export const deleteAllJobsForUser = asyncHandler(async (req, res) => {
   const result = await Job.deleteMany({ user: req.user._id });
