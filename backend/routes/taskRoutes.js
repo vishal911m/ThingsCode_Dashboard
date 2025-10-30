@@ -11,6 +11,7 @@ import {
   simulateYearlyJobCounts,
   simulateMultipleJobsPerDay,
   deleteAllJobsForUser,
+  simulateTodayJobs, 
 } from '../controllers/jobController.js';
 
 import {
@@ -45,6 +46,7 @@ router.get('/jobs/by-month', getJobsByMonth);
 
 router.post('/simulate', simulateYearlyJobCounts);
 router.post('/simulate/multi', simulateMultipleJobsPerDay);
+router.post('/simulate/today', simulateTodayJobs);
 
 
 // GET: Get job by ID
