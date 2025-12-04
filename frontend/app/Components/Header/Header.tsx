@@ -67,8 +67,10 @@ function Header() {
           {/* <button className="p-2 rounded-full hover:bg-gray-700">
             <FaCog />
           </button> */}
-          
-          <SettingsModal />
+
+          { userId && (
+            <SettingsModal />        
+          )}       
 
           <button className="p-2 rounded-full hover:bg-gray-700">
             <FaInfoCircle />
