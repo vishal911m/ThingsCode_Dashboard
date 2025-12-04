@@ -6,6 +6,7 @@ import { useUserContext } from "@/context/userContext";
 import Link from "next/link";
 import SettingsModal from "../SettingsModal/SettingsModal";
 import SystemInfoModal from "../SystemInfoModal/SystemInfoModal";
+import UserButton from "../UserButton/UserButton";
 
 function Header() {
   const currentDate = moment().format("DD / MM / YYYY");
@@ -79,9 +80,14 @@ function Header() {
 
           <SystemInfoModal />
 
-          <button className="p-2 rounded-full hover:bg-gray-700">
+          {/* <button className="p-2 rounded-full hover:bg-gray-700">
             <FaUser />
-          </button>
+          </button> */}
+
+          {userId && (
+            <UserButton />
+          )} 
+
           { userId && (
             <button className="p-2 rounded-full hover:bg-gray-700" 
             onClick={logoutUser}
