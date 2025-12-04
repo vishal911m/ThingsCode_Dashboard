@@ -276,55 +276,61 @@ export const simulateMultipleJobsPerDay = async (req, res) => {
  */
 export const simulateTodayJobs = async (req, res) => {
   try {
-    // ✅ Determine simulation date
-    const dateParam = req.body.date;
-    const simulationDate = dateParam ? moment(dateParam, "YYYY-MM-DD") : moment();
-    if (!simulationDate.isValid()) {
-      return res.status(400).json({ message: "Invalid date format. Use YYYY-MM-DD." });
-    }
+    const { date } = req.body;
+    const now = new Date();
+    const targetDate = date ? new Date(date) : now;
 
-    // Start + end of simulation day (for cleanup or duplicates)
-    const startOfDay = simulationDate.clone().startOf("day");
-    const endOfDay = simulationDate.clone().endOf("day");
+    // Determine if targetDate is today
+    const isToday =
+      targetDate.getFullYear() === now.getFullYear() &&
+      targetDate.getMonth() === now.getMonth() &&
+      targetDate.getDate() === now.getDate();
 
-    // Fetch all user's machines
+    // Fetch user's machines
     const machines = await MachineDetails.find({ user: req.user._id });
     if (!machines?.length) {
       return res.status(400).json({ message: "No machines found for user." });
     }
 
-    // 🧹 (Optional) Remove existing jobs for that date to avoid duplicates
-    await Job.deleteMany({
-      user: req.user._id,
-      createdAt: { $gte: startOfDay.toDate(), $lte: endOfDay.toDate() },
-    });
-
     const jobsToInsert = [];
 
     for (const machine of machines) {
-      const numberOfJobs = Math.floor(Math.random() * 4) + 2; // 2–5 jobs per machine
+      // Random number of jobs for the day (2–5)
+      const numberOfJobs = Math.floor(Math.random() * 4) + 2;
 
       for (let i = 0; i < numberOfJobs; i++) {
         const jobCount = Math.floor(Math.random() * 50) + 1;
         const rejectionCount = Math.floor(Math.random() * 10);
 
-        // ⏰ Stagger job times throughout the day (more realistic)
-        const randomMinutes = Math.floor(Math.random() * 24 * 60);
-        const jobTime = startOfDay.clone().add(randomMinutes, "minutes");
+        // Determine random hour/minute based on whether it's today or not
+        const endHour = isToday ? now.getHours() : 23;
+        const hour = Math.floor(Math.random() * (endHour + 1));
+
+        let maxMinute = 59;
+        if (isToday && hour === endHour) {
+          maxMinute = now.getMinutes();
+        }
+        const minute = Math.floor(Math.random() * (maxMinute + 1));
+
+        const jobTime = new Date(
+          targetDate.getFullYear(),
+          targetDate.getMonth(),
+          targetDate.getDate(),
+          hour,
+          minute
+        );
 
         jobsToInsert.push({
-          title: `Simulated Job ${i + 1}`,
-          description: `Auto-generated job for ${simulationDate.format("YYYY-MM-DD")}`,
+          title: "Simulated Job",
+          description: "",
           status: "on",
           user: req.user._id,
           machineId: machine._id,
-          rfid:
-            machine.jobList?.[i % (machine.jobList.length || 1)]?.uid ??
-            "SIMULATED",
+          rfid: machine.jobList?.[i % machine.jobList.length]?.uid ?? "SIMULATED",
           jobCount,
           rejectionCount,
-          createdAt: jobTime.toDate(), // 🕒 simulated time within the day
-          updatedAt: jobTime.toDate(),
+          createdAt: jobTime,
+          updatedAt: jobTime,
         });
       }
     }
@@ -332,17 +338,15 @@ export const simulateTodayJobs = async (req, res) => {
     await Job.insertMany(jobsToInsert);
 
     res.status(201).json({
-      message: `Simulated ${jobsToInsert.length} jobs for ${simulationDate.format(
-        "YYYY-MM-DD"
-      )}`,
+      message: `Simulation complete for ${isToday ? "today" : targetDate.toDateString()}`,
       jobsInserted: jobsToInsert.length,
-      simulatedDate: simulationDate.format("YYYY-MM-DD"),
     });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ message: "Simulation failed", error: error.message });
+    res.status(500).json({
+      message: "Simulation failed",
+      error: error.message,
+    });
   }
 };
 

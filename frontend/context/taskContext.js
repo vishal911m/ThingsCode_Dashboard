@@ -492,7 +492,7 @@ export const TasksProvider = ({ children }) => {
       { date: formattedDate },
       { withCredentials: true }
     );
-    toast.success(`Simulated jobs for ${formattedDate}`);
+    toast.success(`Fetched jobs for ${formattedDate}`);
     await getJobsByDate(date); // reload jobs after simulation
   } catch (err) {
     toast.error(err.response?.data?.message || 'Failed to simulate jobs');
