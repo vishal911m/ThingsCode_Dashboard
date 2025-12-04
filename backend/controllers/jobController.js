@@ -277,14 +277,35 @@ export const simulateMultipleJobsPerDay = async (req, res) => {
 export const simulateTodayJobs = async (req, res) => {
   try {
     const { date } = req.body;
+
     const now = new Date();
     const targetDate = date ? new Date(date) : now;
 
-    // Determine if targetDate is today
-    const isToday =
-      targetDate.getFullYear() === now.getFullYear() &&
-      targetDate.getMonth() === now.getMonth() &&
-      targetDate.getDate() === now.getDate();
+    // Normalize to remove time for clean date comparison
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const picked = new Date(
+      targetDate.getFullYear(),
+      targetDate.getMonth(),
+      targetDate.getDate()
+    );
+
+    // ⛔ 1. Block simulation for future dates
+    if (picked > today) {
+      return res.status(400).json({
+        message: "Date is out of range.",
+      });
+      // return res.status(204).json();
+    }
+
+    // ⛔ 2. Block simulation for Sundays (0 = Sunday)
+    if (picked.getDay() === 0) {
+      return res.status(400).json({
+        message: "No jobs found for the day",
+      });
+    }
+
+    // Determine if simulation is for today
+    const isToday = picked.getTime() === today.getTime();
 
     // Fetch user's machines
     const machines = await MachineDetails.find({ user: req.user._id });
@@ -295,14 +316,12 @@ export const simulateTodayJobs = async (req, res) => {
     const jobsToInsert = [];
 
     for (const machine of machines) {
-      // Random number of jobs for the day (2–5)
-      const numberOfJobs = Math.floor(Math.random() * 4) + 2;
+      const numberOfJobs = Math.floor(Math.random() * 4) + 2; // 2–5 random jobs
 
       for (let i = 0; i < numberOfJobs; i++) {
         const jobCount = Math.floor(Math.random() * 50) + 1;
         const rejectionCount = Math.floor(Math.random() * 10);
 
-        // Determine random hour/minute based on whether it's today or not
         const endHour = isToday ? now.getHours() : 23;
         const hour = Math.floor(Math.random() * (endHour + 1));
 
@@ -310,23 +329,24 @@ export const simulateTodayJobs = async (req, res) => {
         if (isToday && hour === endHour) {
           maxMinute = now.getMinutes();
         }
+
         const minute = Math.floor(Math.random() * (maxMinute + 1));
 
         const jobTime = new Date(
-          targetDate.getFullYear(),
-          targetDate.getMonth(),
-          targetDate.getDate(),
+          picked.getFullYear(),
+          picked.getMonth(),
+          picked.getDate(),
           hour,
           minute
         );
 
         jobsToInsert.push({
-          title: "Simulated Job",
+          title: "Job",
           description: "",
           status: "on",
           user: req.user._id,
           machineId: machine._id,
-          rfid: machine.jobList?.[i % machine.jobList.length]?.uid ?? "SIMULATED",
+          rfid: machine.jobList?.[i % machine.jobList.length]?.uid ?? "GEN",
           jobCount,
           rejectionCount,
           createdAt: jobTime,
@@ -338,13 +358,13 @@ export const simulateTodayJobs = async (req, res) => {
     await Job.insertMany(jobsToInsert);
 
     res.status(201).json({
-      message: `Simulation complete for ${isToday ? "today" : targetDate.toDateString()}`,
+      message: `Fetched data for ${isToday ? "today" : picked.toDateString()}`,
       jobsInserted: jobsToInsert.length,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      message: "Simulation failed",
+      message: "Fetching data failed",
       error: error.message,
     });
   }
