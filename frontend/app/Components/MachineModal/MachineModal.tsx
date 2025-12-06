@@ -17,7 +17,7 @@ interface AddMachineModalProps {
   setShowModal: (v: boolean) => void;
 }
 
-const AddMachineModal: React.FC<AddMachineModalProps> = ({ setShowModal }) => {
+const MachineModal =  ()=>{
   const { 
     createMachine, 
     isEditing, 
@@ -190,7 +190,7 @@ const AddMachineModal: React.FC<AddMachineModalProps> = ({ setShowModal }) => {
   );
 };
 
-export default AddMachineModal;
+export default MachineModal;
 
 
 // "use client";
