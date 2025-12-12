@@ -449,7 +449,7 @@ export const TasksProvider = ({ children }) => {
     }
   };
 
-  const updateJob = async (id, updatedData) => {
+  const updateMachine = async (id, updatedData) => {
     try {
       setLoading(true);
       const res = await axios.put(`${BASE_URL}/tasks/machines/${id}`, updatedData, {
@@ -693,7 +693,7 @@ export const TasksProvider = ({ children }) => {
         isEditing, modalMode, activeMachine, machineToDelete,
         showDeleteModal, selectedDate, processedMachines, liveData,           
         createJob, setSelectedDate, getJobs, getJobById,
-        updateJob, deleteMachine, createMachine, getMachines,
+        updateMachine, deleteMachine, createMachine, getMachines,
         getTodayJobs, getJobsByDate, handleInput, openModalForAddMachine,
         openModalForEditMachine, openModalForDeleteMachine, closeModal, getJobsByMonth,
         processedMachines,  todayJobs, setTodayJobs,

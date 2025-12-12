@@ -24,7 +24,7 @@ const MachineModal =  ()=>{
     closeModal,
     modalMode,
     activeMachine,
-    updateJob
+    updateMachine
   } = useTasks();
   const { user } = useUserContext();
 
@@ -94,7 +94,7 @@ const MachineModal =  ()=>{
 
     let success = false;
     if (modalMode === "edit") {
-      success = await updateJob(activeMachine._id, payload);
+      success = await updateMachine(activeMachine._id, payload);
     } else {
       success = await createMachine(payload);
     }
@@ -206,7 +206,7 @@ export default MachineModal;
 //     modalMode,
 //     activeMachine,
 //     createMachine,
-//     updateJob,
+//     updateMachine,
 //   } = useTasks();
 
 //   const [machineName, setMachineName] = useState("");
@@ -254,7 +254,7 @@ export default MachineModal;
 
 //     let success = false;
 //     if (modalMode === "edit") {
-//       success = await updateJob(activeMachine._id, machineData);
+//       success = await updateMachine(activeMachine._id, machineData);
 //     } else {
 //       success = await createMachine(machineData);
 //     }
