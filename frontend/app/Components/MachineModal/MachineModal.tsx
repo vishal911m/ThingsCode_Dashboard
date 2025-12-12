@@ -34,7 +34,7 @@ const MachineModal =  ()=>{
     Array(5).fill(0).map(()=>({jobName: "", uid: ""}))
   );
 
-  const ref = useRef(null);
+  const ref = useRef(null); // This tells react: “Right now, this ref points to nothing. After the component mounts, please attach the actual DOM element here.”
 
   // Close modal when clicking outside
   useDetectOutside({
@@ -55,7 +55,7 @@ const MachineModal =  ()=>{
   // -------------------------------
   // 1️⃣ CURRIED HANDLER FOR SIMPLE INPUTS
   // -------------------------------
-  const handleSimpleInput = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSimpleInput = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => { //React.Dispatch<T> --- Dispatch means: "a function that accepts a value of type T"
     setter(e.target.value);
   };
 
@@ -89,7 +89,7 @@ const MachineModal =  ()=>{
     const payload = {
       machineName,
       machineType,
-      jobList: jobList.filter(job => job.jobName && job.uid)
+      jobList: jobList.filter(job => job.jobName && job.uid) //Filter out empty joblist field before pushing the data
     };
 
     let success = false;
