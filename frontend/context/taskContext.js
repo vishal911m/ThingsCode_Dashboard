@@ -686,6 +686,23 @@ export const TasksProvider = ({ children }) => {
     fetchData();
   }, [selectedHistoricMonth, historicData]);
 
+  useEffect(() => {
+    if (!userId) return;
+
+    // 🔥 RESET ALL USER-SCOPED STATE
+    setJobs([]);
+    setTodayJobs([]);
+    setMonthlyJobs([]);
+    setMachines([]);
+    setMachine({});
+    setActiveMachine(null);
+    setHistoricData(false);
+    setIsDailyDrilldown(false);
+    setSelectedDay(null);
+    setSelectedMonth(null);
+    setHistoricViewDate(null);
+  }, [userId]);
+
   return (
     <TaskContext.Provider
       value={{
