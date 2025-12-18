@@ -142,13 +142,13 @@ const MachineModal =  ()=>{
           <label className="block text-sm font-medium mb-1">Job List</label>
 
           {jobList.map((job, index) => (
-            <div key={index} className="flex gap-2 mb-2">
+            <div key={index} className="flex gap-2 mb-1">
               <input
                 type="text"
                 placeholder="Job Name"
                 value={job.jobName}
                 onChange={handleJobInput(index, "jobName")}
-                className="flex-1 p-2 border rounded bg-gray-50"
+                className="flex-1 p-1 border rounded bg-gray-50"
               />
 
               <input
@@ -156,7 +156,7 @@ const MachineModal =  ()=>{
                 placeholder="UID"
                 value={job.uid}
                 onChange={handleJobInput(index, "uid")}
-                className="flex-1 p-2 border rounded bg-gray-50"
+                className="flex-1 p-1 border rounded bg-gray-50"
               />
             </div>
           ))}
