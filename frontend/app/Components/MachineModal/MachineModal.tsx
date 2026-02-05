@@ -33,15 +33,27 @@ const MachineModal =  ()=>{
   const [jobList, setJobList] = useState<JobItem[]>(
     Array(5).fill(0).map(()=>({jobName: "", uid: ""}))
   );
+  const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   const ref = useRef(null); // This tells react: “Right now, this ref points to nothing. After the component mounts, please attach the actual DOM element here.”
 
+  // open after mount
+  useEffect(() => {
+    // Trigger enter animation AFTER mount
+    requestAnimationFrame(() => setIsOpen(true));
+  }, []);
+  
   // Close modal when clicking outside
   useDetectOutside({
     ref,
     callback: () => {
-      if (isEditing) closeModal();
-    },
+    // ❌ do nothing until modal is fully open
+    if (!isOpen || isClosing) return;
+
+    setIsClosing(true);
+    setTimeout(closeModal, 200);
+  },
   });
 
   useEffect(() => {
@@ -99,15 +111,35 @@ const MachineModal =  ()=>{
       success = await createMachine(payload);
     }
 
-    if (success) closeModal();
+    if (success) {
+      setIsClosing(true);
+
+      setTimeout(() => {
+        closeModal(); // unmount AFTER animation
+      }, 200);
+    }   
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30
+      transition-opacity duration-200
+      ${isOpen && !isClosing ? "opacity-100" : "opacity-0"}
+    `}
+      onClick={() => {
+        if (!isOpen || isClosing) return;
+        setIsClosing(true);
+        setTimeout(closeModal, 200);
+      }}
+    >
       <form 
         ref={ref} 
-        className="w-full max-w-md p-6 bg-white rounded-xl shadow-lg space-y-4"
         onSubmit={handleSubmit}
+        onClick={(e) => e.stopPropagation()}
+        className={`w-full max-w-md p-6 bg-white rounded-xl shadow-lg space-y-4
+          ${isOpen && !isClosing
+            ? "opacity-100 scale-100 translate-y-0"
+            : "opacity-0 scale-95 translate-y-2"}  
+        `}  
       >
         <h2 className="text-xl font-semibold text-center">
           {modalMode === "edit" ? "Update Machine" : "Create Machine"}
