@@ -66,3 +66,35 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes overlay-show {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+@keyframes overlay-hide {
+  from { opacity: 1 }
+  to { opacity: 0 }
+}
+
+@keyframes content-show {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes content-hide {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.95);
+  }
+}
