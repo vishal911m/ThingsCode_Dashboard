@@ -1,30 +1,64 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useTasks } from '@/context/taskContext';
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import MachineModal from "@/app/Components/MachineModal/MachineModal";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
-import MachineItem from '../Components/MachineItem/MachineItem';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import useRedirect from '@/hooks/useUserRedirect';
+import { RootState } from '@/store';
+import { addLiveJob, fetchJobsByDate, setSelectedDate } from '@/store/jobsSlice';
+import { fetchMachines } from '@/store/machinesSlice';
+import { selectProcessedMachines } from '@/store/selectors';
+import { openAddModal, openDeleteModal, openEditModal } from '@/store/uiSlice';
+import { CalendarIcon } from "lucide-react";
+import { useEffect } from 'react';
+import MachineItem from '../Components/MachineItem/MachineItem';
+import DeleteModal from "../Components/DeleteModal/DeleteModal";
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export default function DashboardPage() {
   useRedirect("/login");
+  
+  const dispatch = useAppDispatch();
 
-  const {
-    openModalForAddMachine,
-    openModalForEditMachine,
-    getJobsByDate,
-    openModalForDeleteMachine,
-    selectedDate, 
-    setSelectedDate, 
-    processedMachines,
-  } = useTasks(); 
+
+  const processedMachines = useAppSelector(selectProcessedMachines);
+
+  const selectedDate = useAppSelector(
+    (state: RootState) => state.jobs.selectedDate
+  );
+
+  const machines = useAppSelector(
+    (state: RootState) => state.machines.machines
+  );
+
+  const loading = useAppSelector(
+    (state: RootState) => state.machines.loading
+  );
+
+  const error = useAppSelector(
+    (state: RootState) => state.machines.error
+  );
   
   useEffect(() => {
-    setSelectedDate(new Date()); // Reset to today on dashboard mount
-  }, []);
+    dispatch(fetchMachines());
+    dispatch(fetchJobsByDate(selectedDate));
+  }, [dispatch, selectedDate]);
+
+  useEffect(() => {
+    const socket = new WebSocket(
+      "wss://thingscode-dashboard.onrender.com"
+    );
+
+    socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+
+      if (message.type === "NEW_JOB") {
+        dispatch(addLiveJob(message.data));
+      }
+    };
+
+    return () => socket.close();
+  }, [dispatch]);
 
   return (
     <div className="dashboard p-6">
@@ -44,9 +78,8 @@ export default function DashboardPage() {
             selected={selectedDate}
             onSelect={(date) => {
               if (date) {
-                setSelectedDate(date);
-                getJobsByDate(date);
-                console.log("Selected date:", date);
+                dispatch(setSelectedDate(date));
+                dispatch(fetchJobsByDate(date));
               }
             }}
             initialFocus
@@ -60,19 +93,25 @@ export default function DashboardPage() {
           <MachineItem
             key={machine._id}
             machine={machine}
-            onEdit={openModalForEditMachine}
-            onDelete={openModalForDeleteMachine}
+            onEdit={(machine) =>
+              dispatch(openEditModal(machine))
+            }
+            onDelete={(machine) => dispatch(openDeleteModal(machine))}
           />          
         ))}
 
         <button
-          onClick={openModalForAddMachine}
+          onClick={() => dispatch(openAddModal())}
           className="bg-gray-100 w-[15rem] hover:bg-gray-200 p-4 rounded-lg flex items-center justify-center 
           font-semibold text-gray-800 border border-dashed border-gray-400"
         >
           + Add Machine
         </button>
       </div>
+
+      {/* Global Modal */}
+      <MachineModal />
+      <DeleteModal />
     </div>
   );
 }

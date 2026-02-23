@@ -1,32 +1,37 @@
 "use client";
 
-import { useTasks } from "@/context/taskContext";
 import useDetectOutside from "@/hooks/useDetectOutside";
-import React, { useEffect, useRef } from "react";
+import { RootState } from "@/store";
+import { deleteMachine } from "@/store/machinesSlice";
+import { closeDeleteModal, closeModal } from "@/store/uiSlice";
+import { useRef } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 const DeleteModal = () => {
-  const {
-    showDeleteModal,
-    closeModal,
-    machineToDelete,
-    deleteMachine,
-  } = useTasks();
 
-  useEffect(()=>{},[]);
+  const dispatch = useAppDispatch();
+
+  const showDeleteModal = useAppSelector(
+    (state: RootState) => state.ui.showDeleteModal
+  );
+
+  const machineToDelete = useAppSelector(
+    (state: RootState) => state.ui.activeMachine
+  );
 
   const ref = useRef<HTMLDivElement>(null);
 
   useDetectOutside({
     ref,
     callback: () => {
-      closeModal();
+      dispatch(closeDeleteModal());
     },
   });
 
   const handleDelete = async () => {
     if (machineToDelete?._id) {
-      await deleteMachine(machineToDelete._id);
-      closeModal();
+      await dispatch(deleteMachine(machineToDelete._id));
+      dispatch(closeDeleteModal());
     }
   };
 
@@ -49,7 +54,7 @@ const DeleteModal = () => {
 
         <div className="flex justify-end space-x-4">
           <button
-            onClick={closeModal}
+            onClick={() => dispatch(closeDeleteModal())}
             className="px-4 py-2 border rounded-md hover:bg-gray-100"
           >
             Cancel

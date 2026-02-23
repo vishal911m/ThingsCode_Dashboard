@@ -1,9 +1,12 @@
 "use client";
 import Modal from "@/components/ui/Modal";
-import { useTasks } from "@/context/taskContext";
-import { useUserContext } from "@/context/userContext";
-import React, { useEffect, useRef, useState } from "react";
+import type { RootState } from "@/store";
+import { createMachine, updateMachine, } from "@/store/machinesSlice";
+import { closeModal as closeModalAction } from '@/store/uiSlice';
 import * as Dialog from "@radix-ui/react-dialog";
+import React, { useEffect, useRef, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+
 
 // ----------------------
 // Type Definitions
@@ -16,61 +19,55 @@ interface JobItem {
 // ----------------------
 // Sleep helper (200ms animation)
 // ----------------------
-const sleep = (s: number) =>
-  new Promise(resolve => setTimeout(resolve, s * 1000));
+// const sleep = (s: number) =>
+//   new Promise(resolve => setTimeout(resolve, s * 1000));
 
 const MachineModal =  ()=>{
-  const { 
-    createMachine, 
-    isEditing, 
-    closeModal,
-    modalMode,
-    activeMachine,
-    updateMachine
-  } = useTasks();
-  const { user } = useUserContext();
+  // 🔥 Redux state
+  const dispatch = useAppDispatch();
+  const { modalMode, activeMachine } = useAppSelector(
+    (state: RootState) => state.ui
+  );
+
+  // const { 
+  //   createMachine, 
+  //   updateMachine
+  // } = useTasks();
+  // const { user } = useUserContext();
 
   const open = modalMode === "add" || modalMode === "edit";
+  const [displayMode, setDisplayMode] = useState<"add" | "edit" | null>(null);
+
 
   const [machineName, setMachineName] = useState<string>("");
   const [machineType, setMachineType] = useState<string>("");
   const [jobList, setJobList] = useState<JobItem[]>(
     Array(5).fill(0).map(()=>({jobName: "", uid: ""}))
   );
-  const [isOpen, setIsOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
 
   const formRef = useRef<HTMLFormElement | null>(null); // This tells react: “Right now, this ref points to nothing. After the component mounts, please attach the actual DOM element here.”
-
-  // ----------------------
-  // Sync modalMode → isOpen
-  // ----------------------
-  useEffect(() => {
-    const shouldOpen = modalMode === "add" || modalMode === "edit";
-    setIsOpen(shouldOpen);
-  }, [modalMode]);
   
   useEffect(() => {
     if (modalMode === "edit" && activeMachine) {
       setMachineName(activeMachine.machineName || "");
       setMachineType(activeMachine.machineType || "");
       setJobList(activeMachine.jobList || [{ jobName: "", uid: "" }]);
+      setDisplayMode("edit");
     }
 
     if (modalMode === "add") {
       setMachineName("");
       setMachineType("");
-      setJobList(Array(5).fill(0).map(() => ({ jobName: "", uid: "" })));
+      setJobList(
+        Array(5).fill(0).map(() => ({ jobName: "", uid: "" }))
+      );
+      setDisplayMode("add");
     }
   }, [modalMode, activeMachine]);
 
-  // ----------------------
-  // Close with animation
-  // ----------------------
-  const handleClose = async () => {
-    setIsOpen(false);      // 1️⃣ start exit animation
-    await sleep(0.2);     // 2️⃣ wait for CSS animation
-    closeModal();         // 3️⃣ unmount & cleanup
+
+  const handleClose = () => {
+    dispatch(closeModalAction());
   };
 
   // -------------------------------
@@ -115,9 +112,14 @@ const MachineModal =  ()=>{
 
     let success = false;
     if (modalMode === "edit") {
-      success = await updateMachine(activeMachine._id, payload);
+      success = await await dispatch(
+        updateMachine({
+          id: activeMachine._id,
+          updatedData: payload,
+        })
+      ).unwrap();
     } else {
-      success = await createMachine(payload);
+      success = await dispatch(createMachine(payload)).unwrap();
     }
 
     if (success){
@@ -126,14 +128,14 @@ const MachineModal =  ()=>{
   };
 
   return (
-    <Modal open={isOpen} onOpenChange={(v) => !v && handleClose()}>
+    <Modal open={modalMode === "add" || modalMode === "edit"} onOpenChange={(v) => {if (!v) dispatch(closeModalAction())}}>
       <form 
         ref={formRef} 
         onSubmit={handleSubmit}
         className="bg-white rounded-xl shadow-lg p-6 space-y-4" 
       >
         <Dialog.Title className="text-xl font-semibold text-center">
-          {modalMode === "edit" ? "Update Machine" : "Create Machine"}
+          {displayMode  === "edit" ? "Update Machine" : "Create Machine"}
         </Dialog.Title>
 
         <div>
@@ -202,10 +204,10 @@ const MachineModal =  ()=>{
         <button
           type="submit"
           className={`w-full py-2 text-white rounded ${
-            modalMode === "edit" ? "bg-blue-500 hover:bg-blue-600" : "bg-green-500 hover:bg-green-600"
+            displayMode  === "edit" ? "bg-blue-500 hover:bg-blue-600" : "bg-green-500 hover:bg-green-600"
           }`}
         >
-          {modalMode === "edit" ? "Update Machine" : "Create Machine"}
+          {displayMode  === "edit" ? "Update Machine" : "Create Machine"}
         </button>     
       </form>
       </Modal>

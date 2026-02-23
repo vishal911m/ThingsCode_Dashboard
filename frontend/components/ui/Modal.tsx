@@ -15,7 +15,7 @@ export default function Modal({
 }) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal forceMount>
+      <Dialog.Portal >
         {/* Overlay */}
         <Dialog.Overlay
           className="
